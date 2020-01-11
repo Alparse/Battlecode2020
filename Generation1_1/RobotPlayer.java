@@ -22,12 +22,15 @@ public strictfp class RobotPlayer {
     static boolean miningSoup=false;
     static boolean returningSoup=false;
     static boolean refiningSoup=false;
+    static boolean exploring=false;
     static int miners_built = 0;
     static MapLocation enemy_hqLoc=null;
-    static MapLocation xmin_ymin;
-    static MapLocation xmin_ymax;
-    static MapLocation xmax_ymin;
-    static MapLocation xmax_ymax;
+    static int xmin=99;
+    static int ymin=99;
+    static int xmax=99;
+    static int ymax=99;
+    static int explore_Steps=0;
+    static Direction explore_Dir;
 
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.
@@ -113,4 +116,6 @@ public strictfp class RobotPlayer {
         }
         // System.out.println(rc.getRoundMessages(turnCount-1));
     }
+
+
 }

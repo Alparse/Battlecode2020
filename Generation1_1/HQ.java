@@ -24,11 +24,11 @@ public class HQ extends RobotPlayer {
                 }
             }
         }
-        if (miners_built<=2) {
+        if (miners_built<=4) {
             for (Direction dir : directions)
                 Utility.tryBuild(RobotType.MINER, dir);
                 System.out.println("BYTECODES EXECUTED SO FAR 3 " + Clock.getBytecodeNum());
-                miners_built=miners_built+1;
+
         }
     }
 

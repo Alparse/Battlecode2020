@@ -276,8 +276,9 @@ public class Mover extends RobotPlayer {
 
     public static void goToClosestSoup() throws GameActionException {
         myLoc = rc.getLocation();
+
         if (soupLoc != null) {
-            if (soupLoc.isAdjacentTo(myLoc) && rc.senseSoup(soupLoc) > 0) {
+            if ( rc.canSenseLocation(soupLoc)&&soupLoc.isAdjacentTo(myLoc) && rc.senseSoup(soupLoc) > 0) {
                 goingtoSoup = false;
                 miningSoup = true;
                 System.out.println("AT SOUP, Mining" + soupLoc);
@@ -313,11 +314,29 @@ public class Mover extends RobotPlayer {
                             }
                         }
                     }
+
                 }
+            }
+            if (soupLoc == null) {
+                exploring=true;
+                if (explore_Steps==0) {
+                    explore_Dir = randomDirection();
+                }
+                explore_Steps=explore_Steps+1;
+                soupLoc=myLoc.add(explore_Dir);
+                while (!rc.canMove(explore_Dir)){
+                    explore_Dir=explore_Dir.rotateRight();
+                    soupLoc=myLoc.add(explore_Dir);
+                }
+                if (explore_Steps==12){
+                    explore_Steps=0;
+                }
+
             }
         }
 
         System.out.println("GOING TO SOUP AT " + soupLoc);
+
         if (soupLoc != null) {
             if (rc.canSenseLocation(soupLoc) && myLoc.isAdjacentTo(soupLoc) && rc.senseSoup(soupLoc) > 0) {
                 goingtoSoup = false;
@@ -331,143 +350,161 @@ public class Mover extends RobotPlayer {
     }
 
 
-        public static MapLocation maximumDistanceFromHQ (MapLocation[]locs){
-            MapLocation furthest = locs[0];
-            MapLocation hq = hqLoc;
-            int distance = furthest.distanceSquaredTo(hq);
+    public static MapLocation maximumDistanceFromHQ(MapLocation[] locs) {
+        MapLocation furthest = locs[0];
+        MapLocation hq = hqLoc;
+        int distance = furthest.distanceSquaredTo(hq);
 
-            for (MapLocation loc : locs) {
-                int newdist = loc.distanceSquaredTo(hq);
-                if (newdist > distance) {
-                    furthest = loc;
-                    distance = newdist;
-                }
+        for (MapLocation loc : locs) {
+            int newdist = loc.distanceSquaredTo(hq);
+            if (newdist > distance) {
+                furthest = loc;
+                distance = newdist;
             }
-            return furthest;
+        }
+        return furthest;
+    }
+
+    public static boolean blocked(MapLocation m) throws GameActionException {
+        myLoc = rc.getLocation();
+        MapLocation current = myLoc.add(myLoc.directionTo(m));
+        while (!current.equals(m)) {
+            if (rc.isLocationOccupied(current)) {
+                return true;
+            }
+            current = current.add(current.directionTo(m));
         }
 
-        public static boolean blocked (MapLocation m) throws GameActionException {
-            myLoc = rc.getLocation();
-            MapLocation current = myLoc.add(myLoc.directionTo(m));
-            while (!current.equals(m)) {
-                if (rc.isLocationOccupied(current)) {
+        return false;
+    }
+
+    private static boolean closeToTowers(MapLocation m) {
+        int TSqrange = GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED;
+        RobotInfo[] towers = rc.senseNearbyRobots(-1, enemyTeam);
+
+        for (RobotInfo tower : towers) {
+            if (tower.type == RobotType.NET_GUN) {
+                int range = myLoc.distanceSquaredTo(tower.location);
+                if (range <= TSqrange && myType == RobotType.DELIVERY_DRONE) {
                     return true;
                 }
-                current = current.add(current.directionTo(m));
             }
+        }
+        return false;
+    }
 
+    private static boolean safeMove(MapLocation m) {
+        return !closeToTowers(m);
+    }
+
+    public static boolean moveDrone(Direction preferred) throws GameActionException {
+        myLoc = rc.getLocation();
+        if (!rc.isReady()) {
             return false;
         }
-
-        private static boolean closeToTowers (MapLocation m){
-            int TSqrange = GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED;
-            RobotInfo[] towers = rc.senseNearbyRobots(-1, enemyTeam);
-
-            for (RobotInfo tower : towers) {
-                if (tower.type == RobotType.NET_GUN) {
-                    int range = myLoc.distanceSquaredTo(tower.location);
-                    if (range <= TSqrange && myType == RobotType.DELIVERY_DRONE) {
-                        return true;
-                    }
+        if (rc.canMove(preferred) && safeMove(myLoc.add(preferred))) {
+            rc.move(preferred);
+            return true;
+        } else {
+            Direction right = preferred.rotateRight();
+            Direction left = preferred.rotateLeft();
+            if (rand.nextBoolean()) {
+                if (rc.canMove(right) && safeMove(myLoc.add(right))) {
+                    rc.move(right);
+                    return true;
                 }
-            }
-            return false;
-        }
-
-        private static boolean safeMove (MapLocation m){
-            return !closeToTowers(m);
-        }
-
-        public static boolean moveDrone (Direction preferred) throws GameActionException {
-            myLoc = rc.getLocation();
-            if (!rc.isReady()) {
-                return false;
-            }
-            if (rc.canMove(preferred) && safeMove(myLoc.add(preferred))) {
-                rc.move(preferred);
-                return true;
+                if (rc.canMove(left) && safeMove(myLoc.add(left))) {
+                    rc.move(left);
+                    return true;
+                }
             } else {
-                Direction right = preferred.rotateRight();
-                Direction left = preferred.rotateLeft();
-                if (rand.nextBoolean()) {
-                    if (rc.canMove(right) && safeMove(myLoc.add(right))) {
-                        rc.move(right);
-                        return true;
-                    }
-                    if (rc.canMove(left) && safeMove(myLoc.add(left))) {
-                        rc.move(left);
-                        return true;
+                if (rc.canMove(left) && safeMove(myLoc.add(left))) {
+                    rc.move(left);
+                    return true;
+                }
+                if (rc.canMove(right) && safeMove(myLoc.add(right))) {
+                    rc.move(right);
+                    return true;
+                }
+            }
+            right = right.rotateRight();
+            left = left.rotateLeft();
+            if (rand.nextBoolean()) {
+                if (rc.canMove(right) && safeMove(myLoc.add(right))) {
+                    rc.move(right);
+                    return true;
+                }
+                if (rc.canMove(left) && safeMove(myLoc.add(left))) {
+                    rc.move(left);
+                    return true;
+                }
+            } else {
+                if (rc.canMove(left) && safeMove(myLoc.add(left))) {
+                    rc.move(left);
+                    return true;
+                }
+                if (rc.canMove(right) && safeMove(myLoc.add(right))) {
+                    rc.move(right);
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean isDiagonal(Direction direction) {
+        if (direction == Direction.NORTHEAST || direction == Direction.NORTHWEST || direction == Direction.SOUTHEAST || direction == Direction.SOUTHWEST) {
+            return true;
+        }
+        return false;
+    }
+
+
+    public static MapLocation findClosestToSafe(MapLocation[] locs, MapLocation m) throws GameActionException {
+        RobotInfo[] enemies = rc.senseNearbyRobots(35, rc.getTeam().opponent());
+        MapLocation min = null;
+        int min_distance = 99999999;
+        for (MapLocation loc : locs) {
+            int dist = m.distanceSquaredTo(loc);
+            boolean acceptable = true;
+            for (RobotInfo enemy : enemies) {
+                if (enemy.type == RobotType.DELIVERY_DRONE && (myType == RobotType.LANDSCAPER || myType == RobotType.MINER)) {
+                    if (loc.distanceSquaredTo(enemy.location) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED) {
+                        acceptable = false;
                     }
                 } else {
-                    if (rc.canMove(left) && safeMove(myLoc.add(left))) {
-                        rc.move(left);
-                        return true;
-                    }
-                    if (rc.canMove(right) && safeMove(myLoc.add(right))) {
-                        rc.move(right);
-                        return true;
+                    if (enemy.type == RobotType.HQ || enemy.type == RobotType.NET_GUN && loc.distanceSquaredTo(enemy.location) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED) {
+                        acceptable = false;
                     }
                 }
-                right = right.rotateRight();
-                left = left.rotateLeft();
-                if (rand.nextBoolean()) {
-                    if (rc.canMove(right) && safeMove(myLoc.add(right))) {
-                        rc.move(right);
-                        return true;
-                    }
-                    if (rc.canMove(left) && safeMove(myLoc.add(left))) {
-                        rc.move(left);
-                        return true;
-                    }
-                } else {
-                    if (rc.canMove(left) && safeMove(myLoc.add(left))) {
-                        rc.move(left);
-                        return true;
-                    }
-                    if (rc.canMove(right) && safeMove(myLoc.add(right))) {
-                        rc.move(right);
-                        return true;
-                    }
-                }
+
             }
-
-            return false;
-        }
-
-        public static boolean isDiagonal (Direction direction){
-            if (direction == Direction.NORTHEAST || direction == Direction.NORTHWEST || direction == Direction.SOUTHEAST || direction == Direction.SOUTHWEST) {
-                return true;
+            if (dist < min_distance && safeMove(loc) && acceptable) {
+                min = loc;
+                min_distance = dist;
             }
-            return false;
         }
+        return min;
+    }
 
+    static MapLocation random_explore(Direction explore_dir) throws GameActionException {
+        int range =myType.sensorRadiusSquared;
+        MapLocation new_loc=myLoc;
+        new_loc=new_loc.add(explore_dir);
 
-        public static MapLocation findClosestToSafe (MapLocation[]locs, MapLocation m) throws GameActionException {
-            RobotInfo[] enemies = rc.senseNearbyRobots(35, rc.getTeam().opponent());
-            MapLocation min = null;
-            int min_distance = 99999999;
-            for (MapLocation loc : locs) {
-                int dist = m.distanceSquaredTo(loc);
-                boolean acceptable = true;
-                for (RobotInfo enemy : enemies) {
-                    if (enemy.type == RobotType.DELIVERY_DRONE && (myType == RobotType.LANDSCAPER || myType == RobotType.MINER)) {
-                        if (loc.distanceSquaredTo(enemy.location) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED) {
-                            acceptable = false;
-                        }
-                    } else {
-                        if (enemy.type == RobotType.HQ || enemy.type == RobotType.NET_GUN && loc.distanceSquaredTo(enemy.location) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED) {
-                            acceptable = false;
-                        }
-                    }
+        if (!(rc.canSenseLocation(new_loc)&&rc.onTheMap(new_loc))){
+            explore_dir=explore_dir.rotateRight(); }
 
-                }
-                if (dist < min_distance && safeMove(loc) && acceptable) {
-                    min = loc;
-                    min_distance = dist;
-                }
-            }
-            return min;
-        }
-
+        return new_loc;
 
     }
+
+
+
+    static Direction randomDirection() {
+        return directions[(int) (Math.random() * directions.length)];
+    }
+
+
+}
