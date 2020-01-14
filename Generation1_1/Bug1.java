@@ -127,4 +127,24 @@ public class Bug1 extends RobotPlayer {
         }
         return v;
     }
+    static MapLocation random_explore(Direction explore_dir) throws GameActionException {
+        int range =myType.sensorRadiusSquared;
+        MapLocation new_loc=myLoc;
+        new_loc=new_loc.add(explore_dir);
+
+        if (!(rc.canSenseLocation(new_loc)&&rc.onTheMap(new_loc))){
+            explore_dir=explore_dir.rotateRight(); }
+
+
+        return new_loc;
+
+    }
+
+    static Direction randomDirection() {
+        return directions[(int) (Math.random() * directions.length)];
+    }
+
+
+
+
 }

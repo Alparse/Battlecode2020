@@ -70,6 +70,7 @@ public strictfp class RobotPlayer {
         bugPathState = BugPathState.NONE;
         lastLocation = myLoc;
         trail = new ArrayList<MapLocation>();
+        explore_Dir=Bug1.randomDirection();
 
 
         System.out.println("I'm a " + rc.getType() + " and I just got created!");
