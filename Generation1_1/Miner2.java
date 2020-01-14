@@ -197,7 +197,9 @@ public class Miner2 extends RobotPlayer {
             return;
         }
         //Direction move_dir = myLoc.directionTo(hqLoc);
+        System.out.println("BUG MOVE DIR start");
         Direction move_dir = Bug1.BugGetNext(hqLoc);
+        System.out.println("BUG MOVE DIR "+move_dir);
         makeMove(move_dir);
     }
 
@@ -222,7 +224,7 @@ public class Miner2 extends RobotPlayer {
     public static void makeMove(Direction move_dir) throws GameActionException {
         if (rc.isReady() && rc.canMove(move_dir)) {
             trail.add(myLoc.add(move_dir));
-            if (trail.size() >= 2) {
+            if (trail.size() >= 4) {
                 trail.remove(0);
             }
             rc.move(move_dir);

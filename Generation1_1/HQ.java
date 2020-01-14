@@ -24,7 +24,7 @@ public class HQ extends RobotPlayer {
                 }
             }
         }
-        if (miners_built<=10) {
+        if (miners_built<=20) {
             for (Direction dir : directions)
                 Utility.tryBuild(RobotType.MINER, dir);
                 System.out.println("BYTECODES EXECUTED SO FAR 3 " + Clock.getBytecodeNum());
