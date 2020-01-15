@@ -18,11 +18,15 @@ public strictfp class RobotPlayer {
     static RobotInfo[] enemyRobots = null;
     static RobotInfo[] friendlyRobots = null;
     static MapLocation hqLoc = null;
+    static MapLocation headQuarters = null;
     static MapLocation mother = null;
     static MapLocation myLoc;
 
     static boolean exploring = false;
     static int miners_built = 0;
+    static int constuction_workers_built=0;
+    static int drones_built = 0;
+    static int landscapers_built = 0;
     static MapLocation enemy_hqLoc = null;
     static int explore_Steps = 0;
     static Direction explore_Dir;
@@ -35,6 +39,9 @@ public strictfp class RobotPlayer {
     static BugPathState bugPathState = null;
     static Direction lastBuggingDirection = null;
     static ArrayList<MapLocation> trail = null;
+    static RobotInfo[] nearby_Friendlies = null;
+    static RobotInfo[] nearby_Enemies = null;
+    static boolean construction_worker = false;
 
 
     /**
@@ -44,6 +51,7 @@ public strictfp class RobotPlayer {
     @SuppressWarnings("unused")
     static int width = 0;
     static int height = 0;
+    static int minerTarget = 0;
 
     static int[][] myMap = null;
 
@@ -64,17 +72,23 @@ public strictfp class RobotPlayer {
 
         height = rc.getMapHeight();
         width = rc.getMapWidth();
+        minerTarget = (int) (height * width * .01);
         myMap = new int[height][width];
         myLoc = rc.getLocation();
         myHeight = rc.senseElevation(myLoc);
         bugPathState = BugPathState.NONE;
         lastLocation = myLoc;
         trail = new ArrayList<MapLocation>();
-        explore_Dir=Bug1.randomDirection();
+        explore_Dir = Bug1.randomDirection();
+
 
 
         System.out.println("I'm a " + rc.getType() + " and I just got created!");
         sense_Mother_HQ();
+
+        if (rc.getRoundNum() > 200 && myType.equals(RobotType.MINER)) {
+            construction_worker = true;
+        }
 
         while (true) {
             turnCount += 1;
@@ -114,13 +128,13 @@ public strictfp class RobotPlayer {
     static void sense_Mother_HQ() {
         RobotInfo[] nearby_Friendlies = rc.senseNearbyRobots(4, myTeam);
         for (RobotInfo r : nearby_Friendlies) {
-            if (myType == RobotType.MINER) {
-                if (r.type == RobotType.HQ) {
-                    hqLoc = r.location;
-                    mother = hqLoc;
-                    System.out.println("HQLOC " + hqLoc);
-                }
+            if (r.type == RobotType.HQ) {
+                headQuarters = r.location;
+                hqLoc = r.location;
+                mother = hqLoc;
+                System.out.println("HQLOC " + hqLoc);
             }
+
         }
     }
 

@@ -20,6 +20,25 @@ public class Miner2 extends RobotPlayer {
     static void runMiner() throws GameActionException {
         myLoc = rc.getLocation();
         myHeight = rc.senseElevation(myLoc);
+        System.out.println("CONST WORKER "+construction_worker);
+        if (construction_worker) {
+            for (Direction dir : directions)
+                if (myLoc.distanceSquaredTo(headQuarters)>=18) {
+                    if (Utility.tryBuild(RobotType.VAPORATOR, dir)) {
+                    }
+                }
+            while (!rc.canMove(explore_Dir)) {
+                if (myLoc.distanceSquaredTo(headQuarters) < 98) {
+                    explore_Dir = randomDirection();
+                } else {
+                    explore_Dir = myLoc.directionTo(headQuarters);
+                }
+
+            }
+            makeMove(explore_Dir);
+        }
+
+
         if (!foundSoup && !goingtoSoup && !miningSoup && !returningSoup && !refiningSoup) {
             System.out.println("LOOKING FOR SOUP");
             if (soupLoc == null) {
@@ -38,8 +57,8 @@ public class Miner2 extends RobotPlayer {
             }
             if (!foundSoup) {
                 System.out.println("NO SOOP FOR YOU ");
-                while(!rc.canMove(explore_Dir)){
-                    explore_Dir=randomDirection();
+                while (!rc.canMove(explore_Dir)) {
+                    explore_Dir = randomDirection();
                 }
                 makeMove(explore_Dir);
             }
@@ -57,12 +76,30 @@ public class Miner2 extends RobotPlayer {
             bugPathState = BugPathState.NONE;
         }
         if (!goingtoSoup && !miningSoup && returningSoup && !refiningSoup) {
+            if (myLoc.distanceSquaredTo(hqLoc) > 100) {
+                int soup = fullSoupScan();
+                if ((soup) > 200) {
+                    if (!mother_Nearby()) {
+                        for (Direction dir : directions)
+                            if (Utility.tryBuild(RobotType.REFINERY, dir)) {
+                                hqLoc = myLoc.add(dir);
+                            }
+                    }
+                }
+            }
             System.out.println("RETURNING SOUP TO " + hqLoc);
             returnSoup(hqLoc);
         }
         if (!goingtoSoup && !miningSoup && !returningSoup && refiningSoup) {
             System.out.println("REFINING SOUP AT " + soupLoc);
             refine_Soup();
+            if (!netGun_Nearby()) {
+                if (rc.getTeamSoup() > 200) {
+                    for (Direction dir : directions)
+                        if (Utility.tryBuild(RobotType.NET_GUN, dir)) {
+                        }
+                }
+            }
         }
     }
 
@@ -82,7 +119,7 @@ public class Miner2 extends RobotPlayer {
                     if ((a * a + b * b) < RobotType.MINER.sensorRadiusSquared) {
                         MapLocation search_location = new MapLocation(seach_center.x + a, seach_center.y + b);
                         if (myLoc.distanceSquaredTo(search_location) < RobotType.MINER.sensorRadiusSquared) {
-                            if (rc.canSenseLocation(search_location)&&!rc.senseFlooding(search_location)) {
+                            if (rc.canSenseLocation(search_location) && !rc.senseFlooding(search_location)) {
                                 int soup = rc.senseSoup(search_location);
                                 if (soup > 0) {
                                     soupLoc = search_location;
@@ -199,7 +236,7 @@ public class Miner2 extends RobotPlayer {
         //Direction move_dir = myLoc.directionTo(hqLoc);
         System.out.println("BUG MOVE DIR start");
         Direction move_dir = Bug1.BugGetNext(hqLoc);
-        System.out.println("BUG MOVE DIR "+move_dir);
+        System.out.println("BUG MOVE DIR " + move_dir);
         makeMove(move_dir);
     }
 
@@ -240,5 +277,71 @@ public class Miner2 extends RobotPlayer {
     static Direction randomDirection() {
         return directions[(int) (Math.random() * directions.length)];
     }
+
+    static int fullSoupScan() throws GameActionException {
+        int x_min = -1;
+        int x_max = 1;
+        int y_min = -1;
+        int y_max = 1;
+        int radius = 8;
+        MapLocation seach_center = myLoc;
+        int totalSoup = 0;
+        for (int r = 1; r < radius; r++) {
+            for (int b = y_min * r; b < y_max * r; b++) {
+                for (int a = x_min * r; a <= x_max * r; a++) {
+                    myLoc = rc.getLocation();
+                    if ((a * a + b * b) < RobotType.MINER.sensorRadiusSquared) {
+                        MapLocation search_location = new MapLocation(seach_center.x + a, seach_center.y + b);
+                        if (myLoc.distanceSquaredTo(search_location) < RobotType.MINER.sensorRadiusSquared) {
+                            if (rc.canSenseLocation(search_location) && !rc.senseFlooding(search_location)) {
+                                int soup = rc.senseSoup(search_location);
+                                if (soup > 0) {
+
+                                    totalSoup = totalSoup + soup;
+
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+        return totalSoup;
+    }
+
+    static boolean mother_Nearby() {
+        RobotInfo[] nearby_Friendlies = rc.senseNearbyRobots(-1, myTeam);
+        for (RobotInfo r : nearby_Friendlies) {
+            if (myType == RobotType.MINER) {
+                if (r.type == RobotType.HQ) {
+                    hqLoc = r.location;
+                    return true;
+                }
+                if (r.type == RobotType.REFINERY) {
+                    hqLoc = r.location;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    static boolean netGun_Nearby() {
+        RobotInfo[] nearby_Friendlies = rc.senseNearbyRobots(-1, myTeam);
+        for (RobotInfo r : nearby_Friendlies) {
+            if (myType == RobotType.MINER) {
+                if (r.type == RobotType.NET_GUN) {
+                    return true;
+                }
+                if (r.type == RobotType.HQ) {
+                    return true;
+
+                }
+            }
+        }
+        return false;
+    }
+
 }
 
