@@ -24,7 +24,7 @@ public strictfp class RobotPlayer {
 
     static boolean exploring = false;
     static int miners_built = 0;
-    static int constuction_workers_built=0;
+    static int constuction_workers_built = 0;
     static int drones_built = 0;
     static int landscapers_built = 0;
     static MapLocation enemy_hqLoc = null;
@@ -82,7 +82,6 @@ public strictfp class RobotPlayer {
         explore_Dir = Bug1.randomDirection();
 
 
-
         System.out.println("I'm a " + rc.getType() + " and I just got created!");
         sense_Mother_HQ();
 
@@ -106,9 +105,11 @@ public strictfp class RobotPlayer {
                         break;
                     //case REFINERY:           runRefinery();          break;
                     //case VAPORATOR:          runVaporator();         break;
-                    //case DESIGN_SCHOOL:      runDesignSchool();      break;
+                    case DESIGN_SCHOOL:
+                        DesignSchool.runDesignSchool();
+                        break;
                     //case FULFILLMENT_CENTER: runFulfillmentCenter(); break;
-                    //case LANDSCAPER:         runLandscaper();        break;
+                    case LANDSCAPER:         Landscaper.runLandscaper();        break;
                     //case DELIVERY_DRONE:     runDeliveryDrone();     break;
                     //case NET_GUN:            runNetGun();            break;
                 }
@@ -126,7 +127,7 @@ public strictfp class RobotPlayer {
     }
 
     static void sense_Mother_HQ() {
-        RobotInfo[] nearby_Friendlies = rc.senseNearbyRobots(4, myTeam);
+        RobotInfo[] nearby_Friendlies = rc.senseNearbyRobots(-1, myTeam);
         for (RobotInfo r : nearby_Friendlies) {
             if (r.type == RobotType.HQ) {
                 headQuarters = r.location;

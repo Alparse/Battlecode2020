@@ -20,15 +20,35 @@ public class Miner2 extends RobotPlayer {
     static void runMiner() throws GameActionException {
         myLoc = rc.getLocation();
         myHeight = rc.senseElevation(myLoc);
-        System.out.println("CONST WORKER "+construction_worker);
+        System.out.println("CONST WORKER " + construction_worker);
+
+
         if (construction_worker) {
-            for (Direction dir : directions)
-                if (myLoc.distanceSquaredTo(headQuarters)>=18) {
-                    if (Utility.tryBuild(RobotType.VAPORATOR, dir)) {
+            if (rc.getRoundNum() > 200 && !designSchool_Nearby()&&HQ_Nearby()) {
+                for (Direction dir : directions)
+                    if (myLoc.distanceSquaredTo(headQuarters) > 8&&myLoc.distanceSquaredTo(headQuarters)<13) {
+                        if (Utility.tryBuild(RobotType.DESIGN_SCHOOL, dir)) {
+                        }
                     }
-                }
+            }
+            if (rc.getRoundNum() > 200 && designSchool_Nearby() && !fullfillmentCenter_Nearby()&&HQ_Nearby()&&myLoc.distanceSquaredTo(headQuarters)<42) {
+                for (Direction dir : directions)
+                    if (myLoc.distanceSquaredTo(headQuarters) > 8&&myLoc.distanceSquaredTo(headQuarters)<13) {
+                        if (Utility.tryBuild(RobotType.FULFILLMENT_CENTER, dir)) {
+                        }
+                    }
+            }
+            if (rc.getRoundNum() > 300 && rc.getRoundNum()<1000) {
+                for (Direction dir : directions)
+                    if (myLoc.distanceSquaredTo(headQuarters) > 30) {
+                        if (Utility.tryBuild(RobotType.VAPORATOR, dir)) {
+                        }
+                    }
+            }
+
+
             while (!rc.canMove(explore_Dir)) {
-                if (myLoc.distanceSquaredTo(headQuarters) < 98) {
+                if (myLoc.distanceSquaredTo(headQuarters) < 40) {
                     explore_Dir = randomDirection();
                 } else {
                     explore_Dir = myLoc.directionTo(headQuarters);
@@ -342,6 +362,45 @@ public class Miner2 extends RobotPlayer {
         }
         return false;
     }
+
+    static boolean designSchool_Nearby() {
+        RobotInfo[] nearby_Friendlies = rc.senseNearbyRobots(-1, myTeam);
+        for (RobotInfo r : nearby_Friendlies) {
+            if (myType == RobotType.MINER) {
+                if (r.type == RobotType.DESIGN_SCHOOL) {
+                    return true;
+                }
+
+            }
+        }
+        return false;
+    }
+
+    static boolean fullfillmentCenter_Nearby() {
+        RobotInfo[] nearby_Friendlies = rc.senseNearbyRobots(-1, myTeam);
+        for (RobotInfo r : nearby_Friendlies) {
+            if (myType == RobotType.MINER) {
+                if (r.type == RobotType.FULFILLMENT_CENTER) {
+                    return true;
+                }
+
+            }
+        }
+        return false;
+    }
+    static boolean HQ_Nearby() {
+        RobotInfo[] nearby_Friendlies = rc.senseNearbyRobots(-1, myTeam);
+        for (RobotInfo r : nearby_Friendlies) {
+            if (myType == RobotType.MINER) {
+                if (r.type == RobotType.HQ) {
+                    return true;
+                }
+
+            }
+        }
+        return false;
+    }
+
 
 }
 
