@@ -79,36 +79,18 @@ public class Landscaper extends RobotPlayer {
     }
 
     static Direction dirtScan() throws GameActionException {
-        int x_min = -1;
-        int x_max = 1;
-        int y_min = -1;
-        int y_max = 1;
-        int radius = 1;
-        int r=1;
-        MapLocation seach_center = hqLoc;
-        int totalSoup = 0;
-            for (int b = y_min * r; b < y_max * r; b++) {
-                for (int a = x_min * r; a <= x_max * r; a++) {
-                    myLoc = rc.getLocation();
-                    if ((a * a + b * b) < RobotType.MINER.sensorRadiusSquared) {
-                        MapLocation search_location = new MapLocation(seach_center.x + a, seach_center.y + b);
-                        if(!search_location.equals(hqLoc)){
-                            System.out.println("SEARCLOC "+search_location+" HQ "+hqLoc);
-                            RobotInfo target_robot = rc.senseRobotAtLocation(search_location);
-                            int height_dif = rc.senseElevation(myLoc) - rc.senseElevation(search_location);
-                            System.out.println("HQ LOC "+hqLoc);
-                            if (height_dif > RobotType.LANDSCAPER.dirtLimit && search_location.isAdjacentTo(hqLoc)&&search_location.isAdjacentTo(myLoc)) {
-                                System.out.println("DUMP LOCATION " + search_location);
-                                return myLoc.directionTo(search_location);
-                            }
 
-
-                    }
+        myLoc = rc.getLocation();
+        for (Direction dir : directions)
+            if (!myLoc.add(dir).equals(hqLoc)&&myLoc.add(dir).isAdjacentTo(hqLoc)) {
+                int height_dif = rc.senseElevation(myLoc) - rc.senseElevation(myLoc.add(dir));
+                System.out.println("HQ LOC " + hqLoc);
+                if (height_dif > RobotType.LANDSCAPER.dirtLimit) {
+                    System.out.println("DUMP LOCATION " + dir);
+                    return dir;
                 }
             }
 
-
-        }
         return null;
     }
 

@@ -72,7 +72,7 @@ public strictfp class RobotPlayer {
 
         height = rc.getMapHeight();
         width = rc.getMapWidth();
-        minerTarget = (int) (height * width * .005);
+        minerTarget = (int) (height * width * .01*height/64);
         myMap = new int[height][width];
         myLoc = rc.getLocation();
         myHeight = rc.senseElevation(myLoc);
