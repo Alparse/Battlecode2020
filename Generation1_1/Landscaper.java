@@ -15,25 +15,42 @@ public class Landscaper extends RobotPlayer {
         myLoc = rc.getLocation();
         //myHeight = rc.senseElevation(myLoc);
         mother_Nearby();
-
-        if (myLoc.isAdjacentTo(hqLoc)){
+        Direction dig_dirt_dir = null;
+        if (myLoc.isAdjacentTo(hqLoc)) {
             System.out.println("AT SPOT");
-            Direction dig_dirt_dir=hqLoc.directionTo(myLoc);
-            if(rc.canDigDirt(dig_dirt_dir)){
-                if (rc.isReady()){
+            dig_dirt_dir = hqLoc.directionTo(myLoc);
+            if (rc.canDigDirt(dig_dirt_dir)) {
+                if (rc.isReady()) {
                     rc.digDirt(dig_dirt_dir);
+                }
+            } else {
+                for (Direction d : directions) {
+                    if (rc.canDigDirt(dig_dirt_dir)) {
+                        if (rc.isReady()) {
+                            rc.digDirt(dig_dirt_dir);
+                        }
+                    }
                 }
 
             }
-            if(rc.getDirtCarrying()==RobotType.LANDSCAPER.dirtLimit){
-                if(rc.canDepositDirt(Direction.CENTER)){
-                    if (rc.isReady()){
+            if (rc.getDirtCarrying() == RobotType.LANDSCAPER.dirtLimit) {
+                Direction deposit_dir = dirtScan();
+                if (deposit_dir != null) {
+                    if (rc.canDepositDirt(deposit_dir)) {
+                        if (rc.isReady()) {
+                            rc.depositDirt(deposit_dir);
+                        }
+                    }
+                }
+                if (rc.canDepositDirt(Direction.CENTER)) {
+                    if (rc.isReady()) {
                         rc.depositDirt(Direction.CENTER);
                     }
+
                 }
             }
         }
-        if (levee_builder&&!myLoc.isAdjacentTo(hqLoc)) {
+        if (levee_builder && !myLoc.isAdjacentTo(hqLoc)) {
             System.out.println("LEVEE BUILDER" + hqLoc);
             System.out.println("BUG MOVE DIR start");
             Direction move_dir = Bug1.BugGetNext(hqLoc);
@@ -42,6 +59,7 @@ public class Landscaper extends RobotPlayer {
             makeMove(move_dir);
 
         }
+
     }
 
     public static void makeMove(Direction move_dir) throws GameActionException {
@@ -60,36 +78,38 @@ public class Landscaper extends RobotPlayer {
         return directions[(int) (Math.random() * directions.length)];
     }
 
-    static int fullSoupScan() throws GameActionException {
+    static Direction dirtScan() throws GameActionException {
         int x_min = -1;
         int x_max = 1;
         int y_min = -1;
         int y_max = 1;
-        int radius = 8;
-        MapLocation seach_center = myLoc;
+        int radius = 1;
+        int r=1;
+        MapLocation seach_center = hqLoc;
         int totalSoup = 0;
-        for (int r = 1; r < radius; r++) {
             for (int b = y_min * r; b < y_max * r; b++) {
                 for (int a = x_min * r; a <= x_max * r; a++) {
                     myLoc = rc.getLocation();
                     if ((a * a + b * b) < RobotType.MINER.sensorRadiusSquared) {
                         MapLocation search_location = new MapLocation(seach_center.x + a, seach_center.y + b);
-                        if (myLoc.distanceSquaredTo(search_location) < RobotType.MINER.sensorRadiusSquared) {
-                            if (rc.canSenseLocation(search_location) && !rc.senseFlooding(search_location)) {
-                                int soup = rc.senseSoup(search_location);
-                                if (soup > 0) {
-
-                                    totalSoup = totalSoup + soup;
-
-                                }
+                        if(!search_location.equals(hqLoc)){
+                            System.out.println("SEARCLOC "+search_location+" HQ "+hqLoc);
+                            RobotInfo target_robot = rc.senseRobotAtLocation(search_location);
+                            int height_dif = rc.senseElevation(myLoc) - rc.senseElevation(search_location);
+                            System.out.println("HQ LOC "+hqLoc);
+                            if (height_dif > RobotType.LANDSCAPER.dirtLimit && search_location.isAdjacentTo(hqLoc)&&search_location.isAdjacentTo(myLoc)) {
+                                System.out.println("DUMP LOCATION " + search_location);
+                                return myLoc.directionTo(search_location);
                             }
-                        }
+
+
                     }
                 }
-
             }
+
+
         }
-        return totalSoup;
+        return null;
     }
 
     static boolean mother_Nearby() {

@@ -72,7 +72,7 @@ public strictfp class RobotPlayer {
 
         height = rc.getMapHeight();
         width = rc.getMapWidth();
-        minerTarget = (int) (height * width * .01);
+        minerTarget = (int) (height * width * .005);
         myMap = new int[height][width];
         myLoc = rc.getLocation();
         myHeight = rc.senseElevation(myLoc);
@@ -85,7 +85,7 @@ public strictfp class RobotPlayer {
         System.out.println("I'm a " + rc.getType() + " and I just got created!");
         sense_Mother_HQ();
 
-        if (rc.getRoundNum() > 200 && myType.equals(RobotType.MINER)) {
+        if (rc.getRoundNum() > 50 && myType.equals(RobotType.MINER)) {
             construction_worker = true;
         }
 

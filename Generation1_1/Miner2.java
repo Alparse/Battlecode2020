@@ -24,21 +24,32 @@ public class Miner2 extends RobotPlayer {
 
 
         if (construction_worker) {
-            if (rc.getRoundNum() > 200 && !designSchool_Nearby()&&HQ_Nearby()) {
+            if (rc.getRoundNum() > 100 && !designSchool_Nearby()&&HQ_Nearby()) {
                 for (Direction dir : directions)
                     if (myLoc.distanceSquaredTo(headQuarters) > 8&&myLoc.distanceSquaredTo(headQuarters)<13) {
                         if (Utility.tryBuild(RobotType.DESIGN_SCHOOL, dir)) {
+                            construction_worker=false;
                         }
                     }
             }
-            if (rc.getRoundNum() > 200 && designSchool_Nearby() && !fullfillmentCenter_Nearby()&&HQ_Nearby()&&myLoc.distanceSquaredTo(headQuarters)<42) {
+            if (rc.getRoundNum() > 100 && designSchool_Nearby() && !fullfillmentCenter_Nearby()&&HQ_Nearby()&&myLoc.distanceSquaredTo(headQuarters)<42) {
                 for (Direction dir : directions)
                     if (myLoc.distanceSquaredTo(headQuarters) > 8&&myLoc.distanceSquaredTo(headQuarters)<13) {
                         if (Utility.tryBuild(RobotType.FULFILLMENT_CENTER, dir)) {
+                            construction_worker=false;
                         }
                     }
             }
-            if (rc.getRoundNum() > 300 && rc.getRoundNum()<1000) {
+            if (rc.getRoundNum() > 100 && designSchool_Nearby() && fullfillmentCenter_Nearby()&&HQ_Nearby()&&myLoc.distanceSquaredTo(headQuarters)<42) {
+                for (Direction dir : directions)
+                    if (myLoc.distanceSquaredTo(headQuarters) > 8&&myLoc.distanceSquaredTo(headQuarters)<13) {
+                        if (Utility.tryBuild(RobotType.REFINERY, dir)) {
+                            construction_worker=false;
+                        }
+                    }
+            }
+
+            if (rc.getRoundNum() > 500 && rc.getRoundNum()<1000) {
                 for (Direction dir : directions)
                     if (myLoc.distanceSquaredTo(headQuarters) > 30) {
                         if (Utility.tryBuild(RobotType.VAPORATOR, dir)) {
@@ -96,7 +107,7 @@ public class Miner2 extends RobotPlayer {
             bugPathState = BugPathState.NONE;
         }
         if (!goingtoSoup && !miningSoup && returningSoup && !refiningSoup) {
-            if (myLoc.distanceSquaredTo(hqLoc) > 100) {
+            if (myLoc.distanceSquaredTo(hqLoc) > 24) {
                 int soup = fullSoupScan();
                 if ((soup) > 200) {
                     if (!mother_Nearby()) {
@@ -393,6 +404,18 @@ public class Miner2 extends RobotPlayer {
         for (RobotInfo r : nearby_Friendlies) {
             if (myType == RobotType.MINER) {
                 if (r.type == RobotType.HQ) {
+                    return true;
+                }
+
+            }
+        }
+        return false;
+    }
+    static boolean refinery_Nearby() {
+        RobotInfo[] nearby_Friendlies = rc.senseNearbyRobots(-1, myTeam);
+        for (RobotInfo r : nearby_Friendlies) {
+            if (myType == RobotType.MINER) {
+                if (r.type == RobotType.REFINERY) {
                     return true;
                 }
 
