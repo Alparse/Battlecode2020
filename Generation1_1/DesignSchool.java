@@ -9,6 +9,7 @@ import java.util.PriorityQueue;
 
 public class DesignSchool extends RobotPlayer {
     static RobotController rc = RobotPlayer.rc;
+    static int landscapers_built=0;
 
     static void runDesignSchool() throws GameActionException {
 

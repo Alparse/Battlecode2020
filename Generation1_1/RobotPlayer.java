@@ -8,8 +8,6 @@ public strictfp class RobotPlayer {
     static RobotController rc;
 
     static Direction[] directions = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.NORTHEAST, Direction.NORTHWEST, Direction.SOUTHEAST, Direction.SOUTHWEST};
-    static RobotType[] spawnedByMiner = {RobotType.REFINERY, RobotType.VAPORATOR, RobotType.DESIGN_SCHOOL,
-            RobotType.FULFILLMENT_CENTER, RobotType.NET_GUN};
 
     static int turnCount;
     static Team myTeam = null;
@@ -22,13 +20,7 @@ public strictfp class RobotPlayer {
     static MapLocation mother = null;
     static MapLocation myLoc;
 
-    static boolean exploring = false;
-    static int miners_built = 0;
-    static int constuction_workers_built = 0;
-    static int drones_built = 0;
-    static int landscapers_built = 0;
-    static MapLocation enemy_hqLoc = null;
-    static int explore_Steps = 0;
+
     static Direction explore_Dir;
     static int myHeight = 0;
     static MapLocation lastLocation = null;
@@ -39,9 +31,7 @@ public strictfp class RobotPlayer {
     static BugPathState bugPathState = null;
     static Direction lastBuggingDirection = null;
     static ArrayList<MapLocation> trail = null;
-    static RobotInfo[] nearby_Friendlies = null;
-    static RobotInfo[] nearby_Enemies = null;
-    static boolean construction_worker = false;
+
 
 
     /**
@@ -51,8 +41,6 @@ public strictfp class RobotPlayer {
     @SuppressWarnings("unused")
     static int width = 0;
     static int height = 0;
-    static int minerTarget = 0;
-
     static int[][] myMap = null;
 
     public static void run(RobotController rc) throws GameActionException {
@@ -72,7 +60,7 @@ public strictfp class RobotPlayer {
 
         height = rc.getMapHeight();
         width = rc.getMapWidth();
-        minerTarget = (int) (height * width * .01*height/64);
+
         myMap = new int[height][width];
         myLoc = rc.getLocation();
         myHeight = rc.senseElevation(myLoc);
@@ -85,9 +73,6 @@ public strictfp class RobotPlayer {
         System.out.println("I'm a " + rc.getType() + " and I just got created!");
         sense_Mother_HQ();
 
-        if (rc.getRoundNum() > 50 && myType.equals(RobotType.MINER)) {
-            construction_worker = true;
-        }
 
         while (true) {
             turnCount += 1;

@@ -2,14 +2,14 @@ package Generation1_1;
 
 import battlecode.common.*;
 
+import java.util.Arrays;
+
 
 public class Miner2 extends RobotPlayer {
     static RobotController rc = RobotPlayer.rc;
     static MapLocation soupLoc = null;
 
-
-    static enum MinerState {NONE, FOUNDSOUP, GOINGTOSOUP, MININGSOUP, RETURNINGSOUP, REFININGSOUP}
-
+    static boolean construction_worker = false;
     static boolean foundSoup = false;
     static boolean goingtoSoup = false;
     static boolean miningSoup = false;
@@ -18,121 +18,145 @@ public class Miner2 extends RobotPlayer {
 
 
     static void runMiner() throws GameActionException {
-        myLoc = rc.getLocation();
-        myHeight = rc.senseElevation(myLoc);
-        System.out.println("CONST WORKER " + construction_worker);
-
-
-        if (construction_worker) {
-            if (rc.getRoundNum() > 100 && !designSchool_Nearby()&&HQ_Nearby()) {
-                for (Direction dir : directions)
-                    if (myLoc.distanceSquaredTo(headQuarters) > 8&&myLoc.distanceSquaredTo(headQuarters)<13) {
-                        if (Utility.tryBuild(RobotType.DESIGN_SCHOOL, dir)) {
-                            construction_worker=false;
-                        }
-                    }
-            }
-            if (rc.getRoundNum() > 100 && designSchool_Nearby() && !fullfillmentCenter_Nearby()&&HQ_Nearby()&&myLoc.distanceSquaredTo(headQuarters)<42) {
-                for (Direction dir : directions)
-                    if (myLoc.distanceSquaredTo(headQuarters) > 8&&myLoc.distanceSquaredTo(headQuarters)<13) {
-                        if (Utility.tryBuild(RobotType.FULFILLMENT_CENTER, dir)) {
-                            construction_worker=false;
-                        }
-                    }
-            }
-            if (rc.getRoundNum() > 100 && designSchool_Nearby() && fullfillmentCenter_Nearby()&&HQ_Nearby()&&myLoc.distanceSquaredTo(headQuarters)<42) {
-                for (Direction dir : directions)
-                    if (myLoc.distanceSquaredTo(headQuarters) > 8&&myLoc.distanceSquaredTo(headQuarters)<13) {
-                        if (Utility.tryBuild(RobotType.REFINERY, dir)) {
-                            construction_worker=false;
-                        }
-                    }
-            }
-
-            if (rc.getRoundNum() > 500 && rc.getRoundNum()<1000) {
-                for (Direction dir : directions)
-                    if (myLoc.distanceSquaredTo(headQuarters) > 30) {
-                        if (Utility.tryBuild(RobotType.VAPORATOR, dir)) {
-                        }
-                    }
-            }
-
-
-            while (!rc.canMove(explore_Dir)) {
-                if (myLoc.distanceSquaredTo(headQuarters) < 40) {
-                    explore_Dir = randomDirection();
-                } else {
-                    explore_Dir = myLoc.directionTo(headQuarters);
-                }
-
-            }
-            makeMove(explore_Dir);
+        mother_Nearby();
+        if (rc.getRoundNum() > 100 && !designSchool_Nearby() && rc.getRoundNum() < 300) {
+            construction_worker = true;
         }
 
+        while (true) {
+            try {
+                myLoc = rc.getLocation();
+                myHeight = rc.senseElevation(myLoc);
+                System.out.println("CONST WORKER " + construction_worker);
+                mother_Nearby();
 
-        if (!foundSoup && !goingtoSoup && !miningSoup && !returningSoup && !refiningSoup) {
-            System.out.println("LOOKING FOR SOUP");
-            if (soupLoc == null) {
-                findSoup();
-            } else {
-                foundSoup = true;
-            }
-            lastBuggingDirection = null;
-            bugPathState = BugPathState.NONE;
-            if (foundSoup) {
+                if (construction_worker) {
+                    System.out.println(HQ_Nearby());
+                    System.out.println(designSchool_Nearby());
+                    System.out.println(fullfillmentCenter_Nearby());
+                    if (designSchool_Nearby()) {
+                        construction_worker = false;
+                    }
 
-                miningSoup = false;
-                returningSoup = false;
-                refiningSoup = false;
-                goingtoSoup = true;
-            }
-            if (!foundSoup) {
-                System.out.println("NO SOOP FOR YOU ");
-                while (!rc.canMove(explore_Dir)) {
-                    explore_Dir = randomDirection();
-                }
-                makeMove(explore_Dir);
-            }
-        }
-        if (foundSoup && goingtoSoup && !miningSoup && !returningSoup && !refiningSoup) {
-            System.out.println("GOING TO  SOUP AT " + soupLoc);
-            myLoc = rc.getLocation();
-
-            goToClosestSoup(soupLoc);
-        }
-        if (foundSoup && !goingtoSoup && miningSoup && !returningSoup && !refiningSoup) {
-            System.out.println("MINING SOUP AT " + soupLoc);
-            mine_Soup();
-            lastBuggingDirection = null;
-            bugPathState = BugPathState.NONE;
-        }
-        if (!goingtoSoup && !miningSoup && returningSoup && !refiningSoup) {
-            if (myLoc.distanceSquaredTo(hqLoc) > 24) {
-                int soup = fullSoupScan();
-                if ((soup) > 200) {
-                    if (!mother_Nearby()) {
+                    if (rc.getRoundNum() > 50 && !designSchool_Nearby() && HQ_Nearby()) {
+                        System.out.println("TESTER TRUE");
                         for (Direction dir : directions)
-                            if (Utility.tryBuild(RobotType.REFINERY, dir)) {
+                            if (rc.isReady() && Utility.tryBuild(RobotType.DESIGN_SCHOOL, dir)) {
                                 hqLoc = myLoc.add(dir);
                             }
                     }
-                }
-            }
-            System.out.println("RETURNING SOUP TO " + hqLoc);
-            returnSoup(hqLoc);
-        }
-        if (!goingtoSoup && !miningSoup && !returningSoup && refiningSoup) {
-            System.out.println("REFINING SOUP AT " + soupLoc);
-            refine_Soup();
-            if (!netGun_Nearby()) {
-                if (rc.getTeamSoup() > 200) {
-                    for (Direction dir : directions)
-                        if (Utility.tryBuild(RobotType.NET_GUN, dir)) {
+                    if (rc.getRoundNum() > 100 && designSchool_Nearby() && !fullfillmentCenter_Nearby() && HQ_Nearby() && myLoc.distanceSquaredTo(headQuarters) < 42) {
+                        for (Direction dir : directions)
+                            if (myLoc.distanceSquaredTo(headQuarters) > 8 && myLoc.distanceSquaredTo(headQuarters) < 13) {
+                                if (Utility.tryBuild(RobotType.FULFILLMENT_CENTER, dir)) {
+
+                                }
+                            }
+                    }
+                    if (rc.getRoundNum() > 100 && designSchool_Nearby() && fullfillmentCenter_Nearby() && HQ_Nearby() && myLoc.distanceSquaredTo(headQuarters) < 42) {
+                        for (Direction dir : directions)
+                            if (myLoc.distanceSquaredTo(headQuarters) > 8 && myLoc.distanceSquaredTo(headQuarters) < 13) {
+                                if (Utility.tryBuild(RobotType.REFINERY, dir)) {
+
+                                }
+                            }
+                    }
+
+                    if (rc.getRoundNum() > 500) {
+                        for (Direction dir : directions)
+                            if (myLoc.distanceSquaredTo(headQuarters) > 30) {
+                                if (Utility.tryBuild(RobotType.VAPORATOR, dir)) {
+                                }
+                            }
+                    }
+
+                    if (construction_worker) {
+                        while (!rc.canMove(explore_Dir)) {
+                            if (myLoc.distanceSquaredTo(headQuarters) < 40) {
+                                explore_Dir = randomDirection();
+                            } else {
+                                explore_Dir = myLoc.directionTo(headQuarters);
+                            }
+
                         }
+                        makeMove(explore_Dir);
+                    }
                 }
+
+                if (!construction_worker) {
+                    if (!foundSoup && !goingtoSoup && !miningSoup && !returningSoup && !refiningSoup) {
+                        System.out.println("LOOKING FOR SOUP");
+                        if (soupLoc == null) {
+                            findSoup();
+                        } else {
+                            foundSoup = true;
+                        }
+                        lastBuggingDirection = null;
+                        bugPathState = BugPathState.NONE;
+                        if (foundSoup) {
+
+                            miningSoup = false;
+                            returningSoup = false;
+                            refiningSoup = false;
+                            goingtoSoup = true;
+                        }
+                        if (!foundSoup) {
+                            System.out.println("NO SOOP FOR YOU ");
+                            while (!rc.canMove(explore_Dir)) {
+                                explore_Dir = randomDirection();
+                            }
+                            makeMove(explore_Dir);
+                        }
+                    }
+                    if (foundSoup && goingtoSoup && !miningSoup && !returningSoup && !refiningSoup) {
+                        System.out.println("GOING TO  SOUP AT " + soupLoc);
+                        myLoc = rc.getLocation();
+
+                        goToClosestSoup(soupLoc);
+                    }
+                    if (foundSoup && !goingtoSoup && miningSoup && !returningSoup && !refiningSoup) {
+                        System.out.println("MINING SOUP AT " + soupLoc);
+                        mine_Soup();
+                        lastBuggingDirection = null;
+                        bugPathState = BugPathState.NONE;
+                    }
+                    if (!goingtoSoup && !miningSoup && returningSoup && !refiningSoup) {
+                        if (myLoc.distanceSquaredTo(hqLoc) > 24) {
+                            int soup = fullSoupScan();
+                            if ((soup) > 200) {
+                                if (!mother_Nearby()) {
+                                    for (Direction dir : directions)
+                                        if (Utility.tryBuild(RobotType.REFINERY, dir)) {
+                                            hqLoc = myLoc.add(dir);
+                                        }
+                                }
+                            }
+                        }
+                        System.out.println("RETURNING SOUP TO " + hqLoc);
+                        returnSoup(hqLoc);
+                    }
+                    if (!goingtoSoup && !miningSoup && !returningSoup && refiningSoup) {
+                        System.out.println("REFINING SOUP AT " + soupLoc);
+                        refine_Soup();
+                        if (!netGun_Nearby()) {
+                            if (rc.getTeamSoup() > 200) {
+                                for (Direction dir : directions)
+                                    if (Utility.tryBuild(RobotType.NET_GUN, dir)) {
+                                    }
+                            }
+                        }
+                    }
+                }
+                Clock.yield();
+            } catch (Exception e) {
+                System.out.println(rc.getType() + " Exception");
+
+                e.printStackTrace();
+
             }
         }
     }
+
 
     public static void findSoup() throws GameActionException {
         int x_min = -1;
@@ -347,6 +371,7 @@ public class Miner2 extends RobotPlayer {
             if (myType == RobotType.MINER) {
                 if (r.type == RobotType.HQ) {
                     hqLoc = r.location;
+                    headQuarters = hqLoc;
                     return true;
                 }
                 if (r.type == RobotType.REFINERY) {
@@ -377,10 +402,9 @@ public class Miner2 extends RobotPlayer {
     static boolean designSchool_Nearby() {
         RobotInfo[] nearby_Friendlies = rc.senseNearbyRobots(-1, myTeam);
         for (RobotInfo r : nearby_Friendlies) {
-            if (myType == RobotType.MINER) {
-                if (r.type == RobotType.DESIGN_SCHOOL) {
-                    return true;
-                }
+            if (r.type == RobotType.DESIGN_SCHOOL) {
+                return true;
+
 
             }
         }
@@ -399,6 +423,7 @@ public class Miner2 extends RobotPlayer {
         }
         return false;
     }
+
     static boolean HQ_Nearby() {
         RobotInfo[] nearby_Friendlies = rc.senseNearbyRobots(-1, myTeam);
         for (RobotInfo r : nearby_Friendlies) {
@@ -411,6 +436,7 @@ public class Miner2 extends RobotPlayer {
         }
         return false;
     }
+
     static boolean refinery_Nearby() {
         RobotInfo[] nearby_Friendlies = rc.senseNearbyRobots(-1, myTeam);
         for (RobotInfo r : nearby_Friendlies) {
@@ -422,6 +448,18 @@ public class Miner2 extends RobotPlayer {
             }
         }
         return false;
+    }
+
+    static void tryBlockchain() throws GameActionException {
+        if (turnCount < 3) {
+            int[] message = new int[10];
+            for (int i = 0; i < 10; i++) {
+                message[i] = 123;
+            }
+            if (rc.canSubmitTransaction(message, 10))
+                rc.submitTransaction(message, 10);
+        }
+        System.out.println(Arrays.toString(rc.getBlock(turnCount - 1)));
     }
 
 

@@ -7,8 +7,13 @@ import java.util.Objects;
 import java.util.PriorityQueue;
 
 
+
 public class HQ extends RobotPlayer {
     static RobotController rc = RobotPlayer.rc;
+    static int minerTarget=6;
+    static int constructorTarget=2;
+    static int maxMiners=height/4;
+    static int miners_built=0;
 
 
     static void runHQ() throws GameActionException {
@@ -25,7 +30,7 @@ public class HQ extends RobotPlayer {
             }
         }
         System.out.println(minerTarget);
-        if (miners_built < minerTarget||rc.getRoundNum()>200&&miners_built<minerTarget+10) {
+        if (miners_built < minerTarget||rc.getRoundNum()>100&&miners_built<minerTarget+5||rc.getRoundNum()>500&&miners_built<minerTarget+10) {
 
             for (Direction dir : directions)
                 if (Utility.tryBuild(RobotType.MINER, dir)) {
