@@ -23,8 +23,14 @@ public class Landscaper extends RobotPlayer {
         Direction dig_dirt_dir = null;
         if (myLoc.isAdjacentTo(hqLoc)) {
             System.out.println("AT SPOT");
+            if (rc.senseRobotAtLocation(hqLoc.add(Direction.NORTHEAST)) == null) {
 
+            }
             dig_dirt_dir = hqLoc.directionTo(myLoc);
+            if(buildingBeingBuried(hqLoc)){
+                System.out.println("HEEELLPPP MEEEEEEEE IM BEING BURIED ALIVEEEE");
+                dig_dirt_dir=myLoc.directionTo(hqLoc);
+            }
             if (rc.canDigDirt(dig_dirt_dir)) {
                 if (rc.isReady()) {
                     rc.digDirt(dig_dirt_dir);
@@ -40,26 +46,15 @@ public class Landscaper extends RobotPlayer {
 
             }
             if (rc.getDirtCarrying() == RobotType.LANDSCAPER.dirtLimit) {
-                RobotInfo target_enemy=enemyLandscaperScan();
-                Direction deposit_dir=null;
-                if (target_enemy!=null&&target_enemy.location.isAdjacentTo(myLoc)){
-                    deposit_dir=myLoc.directionTo(target_enemy.location);
-                    System.out.println("DUMPING DIRT ON ENEMY AT "+deposit_dir);
-                    if (rc.isReady()) {
-                        rc.depositDirt(deposit_dir);
-                    }
-                }
-                if (target_enemy==null) {
-                    deposit_dir = dirtScan();
-                    if (deposit_dir != null) {
-                        if (rc.canDepositDirt(deposit_dir)) {
-                            if (rc.isReady()) {
-                                rc.depositDirt(deposit_dir);
-                            }
+                Direction deposit_dir = dirtScan();
+                if (deposit_dir != null) {
+                    if (rc.canDepositDirt(deposit_dir)) {
+                        if (rc.isReady()) {
+                            rc.depositDirt(deposit_dir);
                         }
                     }
                 }
-                if (target_enemy==null &&rc.canDepositDirt(Direction.CENTER)) {
+                if (rc.canDepositDirt(Direction.CENTER)) {
                     if (rc.isReady()) {
                         rc.depositDirt(Direction.CENTER);
                     }
@@ -208,6 +203,14 @@ public class Landscaper extends RobotPlayer {
             }
         }
         return null;
+    }
+
+    static boolean buildingBeingBuried(MapLocation building_loc) throws GameActionException {
+        RobotInfo building = rc.senseRobotAtLocation(building_loc);
+        if (building.dirtCarrying > 0) {
+            return true;
+        }
+        return false;
     }
 
 }
