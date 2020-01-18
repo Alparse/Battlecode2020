@@ -44,6 +44,7 @@ public class Landscaper extends RobotPlayer {
                 Direction deposit_dir=null;
                 if (target_enemy!=null&&target_enemy.location.isAdjacentTo(myLoc)){
                     deposit_dir=myLoc.directionTo(target_enemy.location);
+                    System.out.println("DUMPING DIRT ON ENEMY AT "+deposit_dir);
                     if (rc.isReady()) {
                         rc.depositDirt(deposit_dir);
                     }

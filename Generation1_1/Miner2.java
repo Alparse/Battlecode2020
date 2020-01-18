@@ -19,7 +19,7 @@ public class Miner2 extends RobotPlayer {
 
     static void runMiner() throws GameActionException {
         mother_Nearby();
-        if (rc.getRoundNum() > 100 && !designSchool_Nearby() && rc.getRoundNum() < 300) {
+        if (rc.getRoundNum() > 10 && !designSchool_Nearby() && rc.getRoundNum() < 300) {
             construction_worker = true;
         }
 

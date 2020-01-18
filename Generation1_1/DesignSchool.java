@@ -23,7 +23,7 @@ public class DesignSchool extends RobotPlayer {
             System.out.println("BYTECODES EXECUTED SO FAR 3 " + Clock.getBytecodeNum());
         }
 
-        if ((landscapers_built < 12) && rc.getRoundNum() > 100) {
+        if ((landscapers_built < 10) && rc.getRoundNum() > 100) {
 
             for (Direction dir : directions)
                 if (Utility.tryBuild(RobotType.LANDSCAPER, dir)) {
