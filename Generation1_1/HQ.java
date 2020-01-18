@@ -16,6 +16,7 @@ public class HQ extends RobotPlayer {
     static int miners_built=0;
 
 
+
     static void runHQ() throws GameActionException {
         enemyRobots = rc.senseNearbyRobots(-1, enemyTeam);
         if (enemyRobots.length > 0) {
@@ -30,6 +31,9 @@ public class HQ extends RobotPlayer {
             }
         }
         System.out.println(minerTarget);
+        if(rc.getRoundNum()<5) {
+            Communications.sendHqLoc(rc.getLocation());
+        }
         if (miners_built < minerTarget||rc.getRoundNum()>100&&miners_built<minerTarget+5||rc.getRoundNum()>500&&miners_built<minerTarget+10) {
 
             for (Direction dir : directions)
@@ -39,7 +43,7 @@ public class HQ extends RobotPlayer {
             ;
             System.out.println("BYTECODES EXECUTED SO FAR 3 " + Clock.getBytecodeNum());
         }
-
+        Clock.yield();
     }
 
     static PriorityQueue<Target_Que> prioritizeTargets(RobotInfo[] enemyRobots) {

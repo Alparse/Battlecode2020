@@ -38,7 +38,7 @@ public class Miner2 extends RobotPlayer {
                         construction_worker = false;
                     }
 
-                    if (rc.getRoundNum() > 50 && !designSchool_Nearby() && HQ_Nearby()) {
+                    if (rc.getRoundNum() > 50 && !designSchool_Nearby() && HQ_Nearby()&&myLoc.distanceSquaredTo(headQuarters)>8) {
                         System.out.println("TESTER TRUE");
                         for (Direction dir : directions)
                             if (rc.isReady() && Utility.tryBuild(RobotType.DESIGN_SCHOOL, dir)) {
@@ -84,6 +84,8 @@ public class Miner2 extends RobotPlayer {
                 }
 
                 if (!construction_worker) {
+                    Communications.getHqLocFromBlockchain();
+
                     if (!foundSoup && !goingtoSoup && !miningSoup && !returningSoup && !refiningSoup) {
                         System.out.println("LOOKING FOR SOUP");
                         if (soupLoc == null) {
@@ -314,7 +316,7 @@ public class Miner2 extends RobotPlayer {
 
 
     public static void makeMove(Direction move_dir) throws GameActionException {
-        if (rc.isReady() && rc.canMove(move_dir)&&!rc.senseFlooding(myLoc.add(move_dir))) {
+        if (rc.isReady() && rc.canMove(move_dir) && !rc.senseFlooding(myLoc.add(move_dir))) {
             trail.add(myLoc.add(move_dir));
             if (trail.size() >= 4) {
                 trail.remove(0);
@@ -451,17 +453,19 @@ public class Miner2 extends RobotPlayer {
     }
 
     static void tryBlockchain() throws GameActionException {
-        if (turnCount < 3) {
-            int[] message = new int[10];
-            for (int i = 0; i < 10; i++) {
-                message[i] = 123;
-            }
-            if (rc.canSubmitTransaction(message, 10))
-                rc.submitTransaction(message, 10);
-        }
-        System.out.println(Arrays.toString(rc.getBlock(turnCount - 1)));
+        int[] message = new int[10];
+        message= new int[]{1, 2, 3, 4, 5, 6, 7};
+        if (rc.canSubmitTransaction(message, 1))
+            rc.submitTransaction(message, 1);
+
+        Transaction[] test=rc.getBlock(rc.getRoundNum()-1);
+        System.out.println(Arrays.toString(test));
+
+
+
     }
-
-
 }
+
+
+
 

@@ -8,6 +8,7 @@ public class Landscaper extends RobotPlayer {
     static MapLocation soupLoc = null;
     static boolean levee_builder = true;
     static boolean grave_digger = false;
+    static boolean at_spot = false;
 
 
     static void runLandscaper() throws GameActionException {
@@ -15,9 +16,16 @@ public class Landscaper extends RobotPlayer {
         myLoc = rc.getLocation();
         //myHeight = rc.senseElevation(myLoc);
         mother_Nearby();
+        if (hqLoc == null){
+            hqLoc=Communications.getHqLocFromBlockchain();
+        }
+        System.out.println("HQ LOC "+hqLoc);
         Direction dig_dirt_dir = null;
         if (myLoc.isAdjacentTo(hqLoc)) {
             System.out.println("AT SPOT");
+            if(rc.senseRobotAtLocation(hqLoc.add(Direction.NORTHEAST))==null){
+
+            }
             dig_dirt_dir = hqLoc.directionTo(myLoc);
             if (rc.canDigDirt(dig_dirt_dir)) {
                 if (rc.isReady()) {
@@ -51,6 +59,7 @@ public class Landscaper extends RobotPlayer {
             }
         }
         if (levee_builder && !myLoc.isAdjacentTo(hqLoc)) {
+
             System.out.println("LEVEE BUILDER" + hqLoc);
             System.out.println("BUG MOVE DIR start");
             Direction move_dir = Bug1.BugGetNext(hqLoc);
@@ -59,6 +68,7 @@ public class Landscaper extends RobotPlayer {
             makeMove(move_dir);
 
         }
+        Clock.yield();
 
     }
 
@@ -152,6 +162,15 @@ public class Landscaper extends RobotPlayer {
         }
         return false;
     }
-
+    static int landscapersInRange() {
+        RobotInfo[] nearby_Friendlies = rc.senseNearbyRobots(-1, myTeam);
+        int landscapers = 0;
+        for (RobotInfo r : nearby_Friendlies) {
+            if (r.type == RobotType.LANDSCAPER) {
+                landscapers = landscapers + 1;
+            }
+        }
+        return landscapers;
+    }
 
 }

@@ -31,6 +31,9 @@ public strictfp class RobotPlayer {
     static BugPathState bugPathState = null;
     static Direction lastBuggingDirection = null;
     static ArrayList<MapLocation> trail = null;
+    static boolean message_submitted=false;
+    static boolean message_accepted=false;
+    static int message_bidAdder=0;
 
 
 
@@ -68,6 +71,7 @@ public strictfp class RobotPlayer {
         lastLocation = myLoc;
         trail = new ArrayList<MapLocation>();
         explore_Dir = Bug1.randomDirection();
+
 
 
         System.out.println("I'm a " + rc.getType() + " and I just got created!");

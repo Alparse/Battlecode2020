@@ -13,7 +13,7 @@ public class DesignSchool extends RobotPlayer {
 
     static void runDesignSchool() throws GameActionException {
 
-        if ((landscapers_built < 8&&landscapers_Nearby()<=8) && rc.getRoundNum() > 100) {
+        if ((landscapers_built < 12) && rc.getRoundNum() > 100) {
 
             for (Direction dir : directions)
                 if (Utility.tryBuild(RobotType.LANDSCAPER, dir)) {
