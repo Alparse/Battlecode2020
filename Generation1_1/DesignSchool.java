@@ -13,7 +13,7 @@ public class DesignSchool extends RobotPlayer {
 
     static void runDesignSchool() throws GameActionException {
 
-        if (landscapers_built < 2||landscapers_Nearby()>1&&landscapers_built<6) {
+        if (landscapers_built < 3||landscapers_Nearby()>0&&landscapers_built<8) {
 
             for (Direction dir : directions)
                 if (Utility.tryBuild(RobotType.LANDSCAPER, dir)) {
@@ -23,7 +23,7 @@ public class DesignSchool extends RobotPlayer {
             System.out.println("BYTECODES EXECUTED SO FAR 3 " + Clock.getBytecodeNum());
         }
 
-        if ((landscapers_built < 8) && rc.getRoundNum() > 300) {
+        if ((landscapers_built < 9) && rc.getRoundNum() > 300) {
 
             for (Direction dir : directions)
                 if (Utility.tryBuild(RobotType.LANDSCAPER, dir)) {

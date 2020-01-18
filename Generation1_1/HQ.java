@@ -34,7 +34,7 @@ public class HQ extends RobotPlayer {
         if(rc.getRoundNum()<5) {
             Communications.sendHqLoc(rc.getLocation());
         }
-        if (miners_built < 4) {
+        if (miners_built < 3) {
 
             for (Direction dir : directions)
                 if (Utility.tryBuild(RobotType.MINER, dir)) {
@@ -43,7 +43,7 @@ public class HQ extends RobotPlayer {
             ;
             System.out.println("BYTECODES EXECUTED SO FAR 3 " + Clock.getBytecodeNum());
         }
-        if (miners_built < minerTarget||rc.getRoundNum()>300) {
+        if (miners_built < minerTarget||rc.getRoundNum()>200) {
 
             for (Direction dir : directions)
                 if (Utility.tryBuild(RobotType.MINER, dir)) {
