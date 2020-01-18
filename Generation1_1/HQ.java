@@ -58,7 +58,7 @@ public class HQ extends RobotPlayer {
                     break;
                 }
         }
-        if (miners_built >=3&&miners_built<minerTarget) {
+        if (miners_built >3&&miners_built<minerTarget) {
             for (Direction dir : directions)
                 if (Utility.tryBuild(RobotType.MINER, dir)) {
                     RobotInfo built_robot=rc.senseRobotAtLocation(myLoc.add(dir));
