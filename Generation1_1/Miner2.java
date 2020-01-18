@@ -19,7 +19,7 @@ public class Miner2 extends RobotPlayer {
 
     static void runMiner() throws GameActionException {
         mother_Nearby();
-        if (rc.getRoundNum() > 25 && !designSchool_Nearby() && rc.getRoundNum() < 50) {
+        if (rc.getRoundNum() > 25 && !designSchool_Nearby() && rc.getRoundNum() < 100) {
             construction_worker = true;
         }
 
@@ -46,9 +46,9 @@ public class Miner2 extends RobotPlayer {
                             }
                     }
 
-                    if (myLoc.distanceSquaredTo(hqLoc) < 25) {
+                    if (myLoc.distanceSquaredTo(hqLoc) < 13) {
                         myLoc = rc.getLocation();
-                        if (myLoc.distanceSquaredTo(headQuarters) > 10) {
+                        if (myLoc.distanceSquaredTo(headQuarters) > 8) {
                             explore_Dir = myLoc.directionTo(hqLoc).rotateRight();
                         } else {
                             explore_Dir = myLoc.directionTo(headQuarters).opposite();
@@ -56,7 +56,7 @@ public class Miner2 extends RobotPlayer {
                         }
                     }
                     if (myLoc.distanceSquaredTo(hqLoc) >= 25) {
-                        explore_Dir = explore_Dir = myLoc.directionTo(hqLoc);
+                        explore_Dir = myLoc.directionTo(hqLoc);
                     }
                     makeMove(explore_Dir);
                 }
