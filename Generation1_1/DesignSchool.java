@@ -13,6 +13,16 @@ public class DesignSchool extends RobotPlayer {
 
     static void runDesignSchool() throws GameActionException {
 
+        if (landscapers_built < 2) {
+
+            for (Direction dir : directions)
+                if (Utility.tryBuild(RobotType.LANDSCAPER, dir)) {
+                    landscapers_built = landscapers_built + 1;
+                }
+            ;
+            System.out.println("BYTECODES EXECUTED SO FAR 3 " + Clock.getBytecodeNum());
+        }
+
         if ((landscapers_built < 12) && rc.getRoundNum() > 100) {
 
             for (Direction dir : directions)

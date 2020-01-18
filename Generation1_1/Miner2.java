@@ -38,7 +38,7 @@ public class Miner2 extends RobotPlayer {
                         construction_worker = false;
                     }
 
-                    if (rc.getRoundNum() > 50 && !designSchool_Nearby() && HQ_Nearby() && myLoc.distanceSquaredTo(headQuarters) > 8) {
+                    if (rc.getRoundNum() > 25 && !designSchool_Nearby() && HQ_Nearby() && myLoc.distanceSquaredTo(headQuarters) > 8) {
                         System.out.println("TESTER TRUE");
                         for (Direction dir : directions)
                             if (rc.isReady() && Utility.tryBuild(RobotType.DESIGN_SCHOOL, dir)) {

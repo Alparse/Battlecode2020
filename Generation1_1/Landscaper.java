@@ -41,11 +41,15 @@ public class Landscaper extends RobotPlayer {
             }
             if (rc.getDirtCarrying() == RobotType.LANDSCAPER.dirtLimit) {
                 RobotInfo target_enemy=enemyLandscaperScan();
+                Direction deposit_dir=null;
                 if (target_enemy!=null&&target_enemy.location.isAdjacentTo(myLoc)){
-                    Direction deposit_dir=myLoc.directionTo(target_enemy.location);
+                    deposit_dir=myLoc.directionTo(target_enemy.location);
+                    if (rc.isReady()) {
+                        rc.depositDirt(deposit_dir);
+                    }
                 }
                 if (target_enemy==null) {
-                    Direction deposit_dir = dirtScan();
+                    deposit_dir = dirtScan();
                     if (deposit_dir != null) {
                         if (rc.canDepositDirt(deposit_dir)) {
                             if (rc.isReady()) {
