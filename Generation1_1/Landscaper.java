@@ -23,27 +23,27 @@ public class Landscaper extends RobotPlayer {
         Direction dig_dirt_dir = null;
         if (myLoc.isAdjacentTo(hqLoc)) {
             System.out.println("AT SPOT");
-            if (rc.senseRobotAtLocation(hqLoc.add(Direction.NORTHEAST)) == null) {
+            if (enemyLandscaperScan()!=null||rc.getRoundNum()>200) {
 
-            }
-            dig_dirt_dir = hqLoc.directionTo(myLoc);
-            if(buildingBeingBuried(hqLoc)){
-                System.out.println("HEEELLPPP MEEEEEEEE IM BEING BURIED ALIVEEEE");
-                dig_dirt_dir=myLoc.directionTo(hqLoc);
-            }
-            if (rc.canDigDirt(dig_dirt_dir)) {
-                if (rc.isReady()) {
-                    rc.digDirt(dig_dirt_dir);
+                dig_dirt_dir = hqLoc.directionTo(myLoc);
+                if (buildingBeingBuried(hqLoc)) {
+                    System.out.println("HEEELLPPP MEEEEEEEE IM BEING BURIED ALIVEEEE");
+                    dig_dirt_dir = myLoc.directionTo(hqLoc);
                 }
-            } else {
-                for (Direction d : directions) {
-                    if (rc.canDigDirt(dig_dirt_dir)) {
-                        if (rc.isReady()) {
-                            rc.digDirt(dig_dirt_dir);
+                if (rc.canDigDirt(dig_dirt_dir)) {
+                    if (rc.isReady()) {
+                        rc.digDirt(dig_dirt_dir);
+                    }
+                } else {
+                    for (Direction d : directions) {
+                        if (rc.canDigDirt(dig_dirt_dir)) {
+                            if (rc.isReady()) {
+                                rc.digDirt(dig_dirt_dir);
+                            }
                         }
                     }
-                }
 
+                }
             }
             if (rc.getDirtCarrying() == RobotType.LANDSCAPER.dirtLimit) {
                 Direction deposit_dir = dirtScan();

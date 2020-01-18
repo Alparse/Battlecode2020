@@ -43,7 +43,7 @@ public class HQ extends RobotPlayer {
             ;
             System.out.println("BYTECODES EXECUTED SO FAR 3 " + Clock.getBytecodeNum());
         }
-        if (miners_built < minerTarget||rc.getRoundNum()>200) {
+        if (miners_built < minerTarget&&DesignSchool.enemylandscapers_Nearby()==0) {
 
             for (Direction dir : directions)
                 if (Utility.tryBuild(RobotType.MINER, dir)) {

@@ -19,7 +19,7 @@ public class Miner2 extends RobotPlayer {
 
     static void runMiner() throws GameActionException {
         mother_Nearby();
-        if (rc.getRoundNum() > 10 && !designSchool_Nearby() && rc.getRoundNum() < 300) {
+        if (rc.getRoundNum() > 25&& !designSchool_Nearby()&&rc.getRoundNum()<50) {
             construction_worker = true;
         }
 
@@ -38,53 +38,38 @@ public class Miner2 extends RobotPlayer {
                         construction_worker = false;
                     }
 
-                    if (rc.getRoundNum() > 25 && !designSchool_Nearby() && HQ_Nearby() && myLoc.distanceSquaredTo(headQuarters) > 8) {
+                    if (!designSchool_Nearby() && HQ_Nearby() && myLoc.distanceSquaredTo(headQuarters) > 8 && myLoc.distanceSquaredTo(headQuarters) < 10) {
                         System.out.println("TESTER TRUE");
                         for (Direction dir : directions)
                             if (rc.isReady() && Utility.tryBuild(RobotType.DESIGN_SCHOOL, dir)) {
                                 hqLoc = myLoc.add(dir);
                             }
                     }
-                    if (rc.getRoundNum() > 100 && designSchool_Nearby() && !fullfillmentCenter_Nearby() && HQ_Nearby() && myLoc.distanceSquaredTo(headQuarters) < 42) {
-                        for (Direction dir : directions)
-                            if (myLoc.distanceSquaredTo(headQuarters) > 8 && myLoc.distanceSquaredTo(headQuarters) < 13) {
-                                if (Utility.tryBuild(RobotType.FULFILLMENT_CENTER, dir)) {
 
-                                }
-                            }
-                    }
-                    if (rc.getRoundNum() > 100 && designSchool_Nearby() && fullfillmentCenter_Nearby() && HQ_Nearby() && myLoc.distanceSquaredTo(headQuarters) < 42) {
-                        for (Direction dir : directions)
-                            if (myLoc.distanceSquaredTo(headQuarters) > 8 && myLoc.distanceSquaredTo(headQuarters) < 13) {
-                                if (Utility.tryBuild(RobotType.REFINERY, dir)) {
-
-                                }
-                            }
-                    }
-
-                    if (rc.getRoundNum() > 500) {
-                        for (Direction dir : directions)
-                            if (myLoc.distanceSquaredTo(headQuarters) > 30) {
-                                if (Utility.tryBuild(RobotType.VAPORATOR, dir)) {
-                                }
-                            }
-                    }
-
-                    if (construction_worker) {
-                        while (!rc.canMove(explore_Dir)) {
-                            if (myLoc.distanceSquaredTo(headQuarters) < 40) {
-                                explore_Dir = randomDirection();
-                            } else {
-                                explore_Dir = myLoc.directionTo(headQuarters);
-                            }
-
+                    while (!rc.canMove(explore_Dir)) {
+                        if (myLoc.distanceSquaredTo(headQuarters) < 40) {
+                            explore_Dir = randomDirection();
+                        } else {
+                            explore_Dir = myLoc.directionTo(headQuarters);
                         }
-                        makeMove(explore_Dir);
+
                     }
+                    makeMove(explore_Dir);
                 }
 
                 if (!construction_worker) {
                     Communications.getHqLocFromBlockchain();
+                    if (rc.getRoundNum() > 500) {
+                        for (Direction dir : directions)
+                            if (myLoc.distanceSquaredTo(headQuarters) > 30) {
+                                int soup = fullSoupScan();
+                                if (!refinery_Nearby() && soup > 100) {
+                                    if (Utility.tryBuild(RobotType.VAPORATOR, dir)) {
+                                        hqLoc = myLoc.add(dir);
+                                    }
+                                }
+                            }
+                    }
 
                     if (!foundSoup && !goingtoSoup && !miningSoup && !returningSoup && !refiningSoup) {
                         System.out.println("LOOKING FOR SOUP");
@@ -123,20 +108,27 @@ public class Miner2 extends RobotPlayer {
                         bugPathState = BugPathState.NONE;
                     }
                     if (!goingtoSoup && !miningSoup && returningSoup && !refiningSoup) {
-                        if (myLoc.distanceSquaredTo(hqLoc) > 24) {
-                            int soup = fullSoupScan();
-                            if ((soup) > 200) {
-                                if (!mother_Nearby()) {
-                                    for (Direction dir : directions)
-                                        if (Utility.tryBuild(RobotType.REFINERY, dir)) {
-                                            hqLoc = myLoc.add(dir);
-                                        }
+                        System.out.println("TRYING TO BUILD REFINERY 1");
+                        int soup = fullSoupScan();
+                        System.out.println("TRYING TO BUILD REFINERY 1.12" + soup);
+                        System.out.println("TRYING TO BUILD REFINERY 1.1");
+                        if (rc.getRoundNum() > 200 && soup > 100) {
+                            System.out.println("TRYING TO BUILD REFINERY 1.3");
+                            if (!refinery_Nearby() && !HQ_Nearby()) {
+                                System.out.println("TRYING TO BUILD REFINERY 2");
+                                for (Direction dir : directions) {
+                                    if (Utility.tryBuild(RobotType.REFINERY, dir)) {
+                                        System.out.println("TRYING TO BUILD REFINERY 3");
+                                        hqLoc = myLoc.add(dir);
+
+                                    }
                                 }
                             }
                         }
-                        System.out.println("RETURNING SOUP TO " + hqLoc);
-                        returnSoup(hqLoc);
                     }
+                    System.out.println("RETURNING SOUP TO " + hqLoc);
+                    returnSoup(hqLoc);
+
                     if (!goingtoSoup && !miningSoup && !returningSoup && refiningSoup) {
                         System.out.println("REFINING SOUP AT " + soupLoc);
                         refine_Soup();
@@ -157,6 +149,7 @@ public class Miner2 extends RobotPlayer {
 
             }
         }
+
     }
 
 
