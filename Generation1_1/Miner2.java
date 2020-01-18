@@ -38,7 +38,7 @@ public class Miner2 extends RobotPlayer {
                         construction_worker = false;
                     }
 
-                    if (rc.getRoundNum() > 50 && !designSchool_Nearby() && HQ_Nearby()&&myLoc.distanceSquaredTo(headQuarters)>8) {
+                    if (rc.getRoundNum() > 50 && !designSchool_Nearby() && HQ_Nearby() && myLoc.distanceSquaredTo(headQuarters) > 8) {
                         System.out.println("TESTER TRUE");
                         for (Direction dir : directions)
                             if (rc.isReady() && Utility.tryBuild(RobotType.DESIGN_SCHOOL, dir)) {
@@ -183,13 +183,31 @@ public class Miner2 extends RobotPlayer {
                                     foundSoup = true;
 
                                     break outerloop;
-
                                 }
+                            }
+
+
+                            if (rc.canSenseLocation(search_location) && rc.senseFlooding(search_location) && rc.senseSoup(search_location) > 0) {
+                                for (Direction dir : directions) {
+                                    MapLocation search_alt_location = search_location.add(dir);
+                                    if (!rc.senseFlooding(search_alt_location)) {
+                                        int soup = rc.senseSoup(search_location);
+                                        if (soup > 0) {
+                                            soupLoc = search_location;
+                                            foundSoup = true;
+
+                                            break outerloop;
+                                        }
+                                    }
+                                }
+
+
                             }
                         }
                     }
-                }
 
+
+                }
             }
         }
     }
@@ -454,13 +472,12 @@ public class Miner2 extends RobotPlayer {
 
     static void tryBlockchain() throws GameActionException {
         int[] message = new int[10];
-        message= new int[]{1, 2, 3, 4, 5, 6, 7};
+        message = new int[]{1, 2, 3, 4, 5, 6, 7};
         if (rc.canSubmitTransaction(message, 1))
             rc.submitTransaction(message, 1);
 
-        Transaction[] test=rc.getBlock(rc.getRoundNum()-1);
+        Transaction[] test = rc.getBlock(rc.getRoundNum() - 1);
         System.out.println(Arrays.toString(test));
-
 
 
     }
