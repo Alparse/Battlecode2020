@@ -19,7 +19,7 @@ public class Miner2 extends RobotPlayer {
 
     static void runMiner() throws GameActionException {
         mother_Nearby();
-        if (rc.getRoundNum() > 25&& !designSchool_Nearby()&&rc.getRoundNum()<50) {
+        if (rc.getRoundNum() > 25 && !designSchool_Nearby() && rc.getRoundNum() < 50) {
             construction_worker = true;
         }
 
@@ -38,7 +38,7 @@ public class Miner2 extends RobotPlayer {
                         construction_worker = false;
                     }
 
-                    if (!designSchool_Nearby() && HQ_Nearby() && myLoc.distanceSquaredTo(headQuarters) > 8 && myLoc.distanceSquaredTo(headQuarters) < 10) {
+                    if (!designSchool_Nearby() && HQ_Nearby() && myLoc.distanceSquaredTo(hqLoc) > 2) {
                         System.out.println("TESTER TRUE");
                         for (Direction dir : directions)
                             if (rc.isReady() && Utility.tryBuild(RobotType.DESIGN_SCHOOL, dir)) {
@@ -46,13 +46,17 @@ public class Miner2 extends RobotPlayer {
                             }
                     }
 
-                    while (!rc.canMove(explore_Dir)) {
-                        if (myLoc.distanceSquaredTo(headQuarters) < 40) {
-                            explore_Dir = randomDirection();
+                    if (myLoc.distanceSquaredTo(hqLoc) < 25) {
+                        myLoc = rc.getLocation();
+                        if (myLoc.distanceSquaredTo(headQuarters) > 10) {
+                            explore_Dir = myLoc.directionTo(hqLoc).rotateRight();
                         } else {
-                            explore_Dir = myLoc.directionTo(headQuarters);
-                        }
+                            explore_Dir = myLoc.directionTo(headQuarters).opposite();
 
+                        }
+                    }
+                    if (myLoc.distanceSquaredTo(hqLoc) >= 25) {
+                        explore_Dir = explore_Dir = myLoc.directionTo(hqLoc);
                     }
                     makeMove(explore_Dir);
                 }
@@ -353,6 +357,7 @@ public class Miner2 extends RobotPlayer {
         int y_max = 1;
         int radius = 8;
         MapLocation seach_center = myLoc;
+        myLoc=rc.getLocation();
         int totalSoup = 0;
         for (int r = 1; r < radius; r++) {
             for (int b = y_min * r; b < y_max * r; b++) {
