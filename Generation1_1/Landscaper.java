@@ -16,16 +16,14 @@ public class Landscaper extends RobotPlayer {
         myLoc = rc.getLocation();
         //myHeight = rc.senseElevation(myLoc);
         mother_Nearby();
-        if (hqLoc == null){
-            hqLoc=Communications.getHqLocFromBlockchain();
+        if (hqLoc == null) {
+            hqLoc = Communications.getHqLocFromBlockchain();
         }
-        System.out.println("HQ LOC "+hqLoc);
+        System.out.println("HQ LOC " + hqLoc);
         Direction dig_dirt_dir = null;
         if (myLoc.isAdjacentTo(hqLoc)) {
             System.out.println("AT SPOT");
-            if(rc.senseRobotAtLocation(hqLoc.add(Direction.NORTHEAST))==null){
 
-            }
             dig_dirt_dir = hqLoc.directionTo(myLoc);
             if (rc.canDigDirt(dig_dirt_dir)) {
                 if (rc.isReady()) {
@@ -42,15 +40,21 @@ public class Landscaper extends RobotPlayer {
 
             }
             if (rc.getDirtCarrying() == RobotType.LANDSCAPER.dirtLimit) {
-                Direction deposit_dir = dirtScan();
-                if (deposit_dir != null) {
-                    if (rc.canDepositDirt(deposit_dir)) {
-                        if (rc.isReady()) {
-                            rc.depositDirt(deposit_dir);
+                RobotInfo target_enemy=enemyLandscaperScan();
+                if (target_enemy!=null&&target_enemy.location.isAdjacentTo(myLoc)){
+                    Direction deposit_dir=myLoc.directionTo(target_enemy.location);
+                }
+                if (target_enemy==null) {
+                    Direction deposit_dir = dirtScan();
+                    if (deposit_dir != null) {
+                        if (rc.canDepositDirt(deposit_dir)) {
+                            if (rc.isReady()) {
+                                rc.depositDirt(deposit_dir);
+                            }
                         }
                     }
                 }
-                if (rc.canDepositDirt(Direction.CENTER)) {
+                if (target_enemy==null &&rc.canDepositDirt(Direction.CENTER)) {
                     if (rc.isReady()) {
                         rc.depositDirt(Direction.CENTER);
                     }
@@ -92,7 +96,7 @@ public class Landscaper extends RobotPlayer {
 
         myLoc = rc.getLocation();
         for (Direction dir : directions)
-            if (!myLoc.add(dir).equals(hqLoc)&&myLoc.add(dir).isAdjacentTo(hqLoc)) {
+            if (!myLoc.add(dir).equals(hqLoc) && myLoc.add(dir).isAdjacentTo(hqLoc)) {
                 int height_dif = rc.senseElevation(myLoc) - rc.senseElevation(myLoc.add(dir));
                 System.out.println("HQ LOC " + hqLoc);
                 if (height_dif > RobotType.LANDSCAPER.dirtLimit) {
@@ -162,6 +166,7 @@ public class Landscaper extends RobotPlayer {
         }
         return false;
     }
+
     static int landscapersInRange() {
         RobotInfo[] nearby_Friendlies = rc.senseNearbyRobots(-1, myTeam);
         int landscapers = 0;
@@ -171,6 +176,33 @@ public class Landscaper extends RobotPlayer {
             }
         }
         return landscapers;
+    }
+
+    static RobotInfo enemyLandscaperScan() throws GameActionException {
+        enemyRobots = rc.senseNearbyRobots(-1, enemyTeam);
+        int distance = 999;
+        int r_distance = 1000;
+        RobotInfo target = null;
+        for (RobotInfo r : enemyRobots) {
+            if (r.getType() == RobotType.LANDSCAPER) {
+                r_distance = myLoc.distanceSquaredTo(r.location);
+                if (r_distance < distance) {
+                    target = r;
+                }
+            }
+
+        }
+        return target;
+    }
+
+    static RobotInfo enemyHQScan() throws GameActionException {
+        enemyRobots = rc.senseNearbyRobots(-1, enemyTeam);
+        for (RobotInfo r : enemyRobots) {
+            if (r.getType() == RobotType.HQ) {
+                return r;
+            }
+        }
+        return null;
     }
 
 }
