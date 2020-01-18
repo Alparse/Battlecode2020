@@ -23,6 +23,9 @@ public class Miner2 extends RobotPlayer {
     static void runMiner() throws GameActionException {
         mother_Nearby();
         minerJob=Communications.getMinerJobFromBlockchain();
+        if (hqLoc == null) {
+            Communications.getHqLocFromBlockchain();
+        }
 
 
         while (true) {
@@ -68,21 +71,21 @@ public class Miner2 extends RobotPlayer {
 
                 if (minerJob==0) {
                     System.out.println("I AM A MINER");
-                    if (hqLoc == null) {
-                        Communications.getHqLocFromBlockchain();
-                    }
+
 
                     if (!foundSoup && !goingtoSoup && !miningSoup && !returningSoup && !refiningSoup) {
                         System.out.println("LOOKING FOR SOUP");
                         if (soupLoc == null) {
                             findSoup();
-                        } else {
-                            foundSoup = true;
+                        //} else {
+                           // foundSoup = true;
+                        }
+                        if (soupLoc!=null){
+                            foundSoup=true;
                         }
                         lastBuggingDirection = null;
                         bugPathState = BugPathState.NONE;
                         if (foundSoup) {
-
                             miningSoup = false;
                             returningSoup = false;
                             refiningSoup = false;
@@ -143,7 +146,6 @@ public class Miner2 extends RobotPlayer {
                     }
                 }
                 System.out.println("BYTECODE END "+Clock.getBytecodeNum());
-            Clock.yield();
             } catch (Exception e) {
                 System.out.println(rc.getType() + " Exception");
 
@@ -176,7 +178,7 @@ public class Miner2 extends RobotPlayer {
                                 if (soup > 0) {
                                     soupLoc = search_location;
                                     foundSoup = true;
-
+                                    System.out.println("FOUND SOUP WITH SOUP SCAN");
                                     break outerloop;
                                 }
                             }
@@ -190,7 +192,7 @@ public class Miner2 extends RobotPlayer {
                                         if (soup > 0) {
                                             soupLoc = search_location;
                                             foundSoup = true;
-
+                                            System.out.println("FOUND SOUP WITH SOUP SCAN");
                                             break outerloop;
                                         }
                                     }
@@ -253,24 +255,38 @@ public class Miner2 extends RobotPlayer {
     static void mine_Soup() throws GameActionException {
         myLoc = rc.getLocation();
         System.out.println("MINING SOUP");
-        if (rc.getSoupCarrying() == RobotType.MINER.soupLimit && rc.senseSoup(soupLoc) > 0) {
-            foundSoup = true;
-            goingtoSoup = false;
-            miningSoup = false;
-            returningSoup = true;
-            refiningSoup = false;
-            return;
+        if(rc.canSenseLocation(soupLoc)){
+            if (rc.getSoupCarrying() == RobotType.MINER.soupLimit && rc.senseSoup(soupLoc) > 0) {
+                foundSoup = true;
+                goingtoSoup = false;
+                miningSoup = false;
+                returningSoup = true;
+                refiningSoup = false;
+                return;
+            }
+            if (rc.senseSoup(soupLoc) == 0 && rc.getSoupCarrying() < RobotType.MINER.soupLimit) {
+                findSoup();
+                //soupLoc = null;
+                foundSoup = false;
+                goingtoSoup = false;
+                miningSoup = false;
+                returningSoup = false;
+                refiningSoup = false;
+                return;
+            }
+            if (rc.senseSoup(soupLoc) == 0) {
+                findSoup();
+                //soupLoc = null;
+                foundSoup = false;
+                goingtoSoup = false;
+                miningSoup = false;
+                returningSoup = false;
+                refiningSoup = false;
+                return;
+            }
         }
-        if (rc.senseSoup(soupLoc) == 0 && rc.getSoupCarrying() < RobotType.MINER.soupLimit) {
-            findSoup();
-            //soupLoc = null;
-            foundSoup = false;
-            goingtoSoup = false;
-            miningSoup = false;
-            returningSoup = false;
-            refiningSoup = false;
-            return;
-        }
+
+
         if (rc.canMineSoup(myLoc.directionTo(soupLoc)) && !returningSoup) {
             foundSoup = true;
             goingtoSoup = false;
@@ -282,16 +298,7 @@ public class Miner2 extends RobotPlayer {
             }
             return;
         }
-        if (rc.canSenseLocation(soupLoc) && rc.senseSoup(soupLoc) == 0) {
-            findSoup();
-            //soupLoc = null;
-            foundSoup = false;
-            goingtoSoup = false;
-            miningSoup = false;
-            returningSoup = false;
-            refiningSoup = false;
-            return;
-        }
+
     }
 
     static void returnSoup(MapLocation hqloc) throws GameActionException {
