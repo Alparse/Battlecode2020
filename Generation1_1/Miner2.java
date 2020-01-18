@@ -126,7 +126,7 @@ public class Miner2 extends RobotPlayer {
                             }
                         }
                     }
-                    System.out.println("RETURNING SOUP TO " + hqLoc);
+                    System.out.println("RETURNING SOUP TO " + hqLoc+" With Soup= "+rc.getSoupCarrying());
                     returnSoup(hqLoc);
 
                     if (!goingtoSoup && !miningSoup && !returningSoup && refiningSoup) {

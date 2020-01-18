@@ -49,6 +49,7 @@ public class Communications extends RobotPlayer {
         message[4] = job;
         if (rc.canSubmitTransaction(message, 3)) {
             rc.submitTransaction(message, 3);
+            System.out.println("BLOCKCHAIN SEND JOB MESSAGE "+job);
         }
     }
 

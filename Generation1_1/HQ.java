@@ -12,7 +12,7 @@ public class HQ extends RobotPlayer {
     static RobotController rc = RobotPlayer.rc;
     static int minerTarget=6+height/20;
     static int constructorTarget=2;
-    static int maxMiners=height/4;
+    static int maxMiners=4;
     static int miners_built=0;
 
 
@@ -45,6 +45,8 @@ public class HQ extends RobotPlayer {
         if (miners_built < 3) {
             for (Direction dir : directions)
                 if (Utility.tryBuild(RobotType.MINER, dir)) {
+                    RobotInfo built_robot=rc.senseRobotAtLocation(myLoc.add(dir));
+                    Communications.sendMinerJob(built_robot.ID,0);
                     miners_built = miners_built + 1;
                     break;
                 }

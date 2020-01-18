@@ -99,7 +99,7 @@ public strictfp class RobotPlayer {
                         HQ.runHQ();
                         break;
                     case MINER:
-                        Miner2.runMiner();
+                        Miner3.runMiner();
                         break;
                     //case REFINERY:           runRefinery();          break;
                     //case VAPORATOR:          runVaporator();         break;
