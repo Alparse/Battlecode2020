@@ -78,7 +78,6 @@ public class Landscaper extends RobotPlayer {
 
         }
         System.out.println("BYTECODE END "+Clock.getBytecodeNum());
-        Clock.yield();
 
     }
 

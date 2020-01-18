@@ -143,7 +143,7 @@ public class Miner2 extends RobotPlayer {
                     }
                 }
                 System.out.println("BYTECODE END "+Clock.getBytecodeNum());
-                Clock.yield();
+            Clock.yield();
             } catch (Exception e) {
                 System.out.println(rc.getType() + " Exception");
 
