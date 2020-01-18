@@ -12,22 +12,27 @@ public class Landscaper extends RobotPlayer {
 
 
     static void runLandscaper() throws GameActionException {
-        //sense_Mother_HQ();
+        System.out.println("BYTECODE START "+Clock.getBytecodeNum());
         myLoc = rc.getLocation();
-        //myHeight = rc.senseElevation(myLoc);
+        myHeight = rc.senseElevation(myLoc);
         mother_Nearby();
+        friendlyRobots = rc.senseNearbyRobots(-1, myTeam);
+        enemyRobots = rc.senseNearbyRobots(-1, enemyTeam);
+        Utility.friendlyRobotScan();
+        Utility.enemyRobotScan();
+
         if (hqLoc == null) {
             hqLoc = Communications.getHqLocFromBlockchain();
         }
+
         System.out.println("HQ LOC " + hqLoc);
         Direction dig_dirt_dir = null;
         if (myLoc.isAdjacentTo(hqLoc)) {
             System.out.println("AT SPOT");
-            if (enemyLandscaperScan()!=null||rc.getRoundNum()>200) {
+            if (enemyLandscaperNear||rc.getRoundNum()>200) {
 
                 dig_dirt_dir = hqLoc.directionTo(myLoc);
                 if (buildingBeingBuried(hqLoc)) {
-                    System.out.println("HEEELLPPP MEEEEEEEE IM BEING BURIED ALIVEEEE");
                     dig_dirt_dir = myLoc.directionTo(hqLoc);
                 }
                 if (rc.canDigDirt(dig_dirt_dir)) {
@@ -72,6 +77,7 @@ public class Landscaper extends RobotPlayer {
             makeMove(move_dir);
 
         }
+        System.out.println("BYTECODE END "+Clock.getBytecodeNum());
         Clock.yield();
 
     }
@@ -82,15 +88,6 @@ public class Landscaper extends RobotPlayer {
         }
     }
 
-    static void random_explore(Direction explore_dir) throws GameActionException {
-        while (!rc.canMove(explore_dir)) {
-            explore_Dir = explore_Dir.rotateRight();
-        }
-    }
-
-    static Direction randomDirection() {
-        return directions[(int) (Math.random() * directions.length)];
-    }
 
     static Direction dirtScan() throws GameActionException {
 
@@ -125,85 +122,6 @@ public class Landscaper extends RobotPlayer {
         return false;
     }
 
-    static boolean netGun_Nearby() {
-        RobotInfo[] nearby_Friendlies = rc.senseNearbyRobots(-1, myTeam);
-        for (RobotInfo r : nearby_Friendlies) {
-            if (myType == RobotType.MINER) {
-                if (r.type == RobotType.NET_GUN) {
-                    return true;
-                }
-                if (r.type == RobotType.HQ) {
-                    return true;
-
-                }
-            }
-        }
-        return false;
-    }
-
-    static boolean designSchool_Nearby() {
-        RobotInfo[] nearby_Friendlies = rc.senseNearbyRobots(-1, myTeam);
-        for (RobotInfo r : nearby_Friendlies) {
-            if (myType == RobotType.MINER) {
-                if (r.type == RobotType.DESIGN_SCHOOL) {
-                    return true;
-                }
-
-            }
-        }
-        return false;
-    }
-
-    static boolean fullfillmentCenter_Nearby() {
-        RobotInfo[] nearby_Friendlies = rc.senseNearbyRobots(-1, myTeam);
-        for (RobotInfo r : nearby_Friendlies) {
-            if (myType == RobotType.MINER) {
-                if (r.type == RobotType.FULFILLMENT_CENTER) {
-                    return true;
-                }
-
-            }
-        }
-        return false;
-    }
-
-    static int landscapersInRange() {
-        RobotInfo[] nearby_Friendlies = rc.senseNearbyRobots(-1, myTeam);
-        int landscapers = 0;
-        for (RobotInfo r : nearby_Friendlies) {
-            if (r.type == RobotType.LANDSCAPER) {
-                landscapers = landscapers + 1;
-            }
-        }
-        return landscapers;
-    }
-
-    static RobotInfo enemyLandscaperScan() throws GameActionException {
-        enemyRobots = rc.senseNearbyRobots(-1, enemyTeam);
-        int distance = 999;
-        int r_distance = 1000;
-        RobotInfo target = null;
-        for (RobotInfo r : enemyRobots) {
-            if (r.getType() == RobotType.LANDSCAPER) {
-                r_distance = myLoc.distanceSquaredTo(r.location);
-                if (r_distance < distance) {
-                    target = r;
-                }
-            }
-
-        }
-        return target;
-    }
-
-    static RobotInfo enemyHQScan() throws GameActionException {
-        enemyRobots = rc.senseNearbyRobots(-1, enemyTeam);
-        for (RobotInfo r : enemyRobots) {
-            if (r.getType() == RobotType.HQ) {
-                return r;
-            }
-        }
-        return null;
-    }
 
     static boolean buildingBeingBuried(MapLocation building_loc) throws GameActionException {
         RobotInfo building = rc.senseRobotAtLocation(building_loc);

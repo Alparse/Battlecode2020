@@ -34,4 +34,47 @@ public class Utility extends RobotPlayer {
             enemyTeam = Team.B;
         }
     }
+    static void friendlyRobotScan() {
+        HQNear = false;
+        designCenterNear = false;
+        fulfillmentCenterNear = false;
+        refineryNear = false;
+        netgunNear = false;
+        vaporatorNear = false;
+        for (RobotInfo r : friendlyRobots) {
+            if (r.type == RobotType.HQ) {
+                HQNear = true;
+            }
+            if (r.type == RobotType.DESIGN_SCHOOL) {
+                designCenterNear = true;
+            }
+            if (r.type == RobotType.FULFILLMENT_CENTER) {
+                fulfillmentCenterNear = true;
+            }
+            if (r.type == RobotType.REFINERY) {
+                refineryNear = true;
+            }
+            if (r.type == RobotType.NET_GUN) {
+                netgunNear = true;
+            }
+            if (r.type == RobotType.VAPORATOR) {
+                vaporatorNear = true;
+            }
+        }
+
+    }
+
+    static void enemyRobotScan() {
+        enemiesNear = false;
+        enemyLandscaperNear = false;
+        if (enemyRobots.length > 0) {
+            enemiesNear = true;
+        }
+        for (RobotInfo r : enemyRobots) {
+            if (r.type == RobotType.LANDSCAPER) {
+                enemyLandscaperNear = true;
+                break;
+            }
+        }
+    }
 }

@@ -35,6 +35,15 @@ public strictfp class RobotPlayer {
     static boolean message_accepted=false;
     static int message_bidAdder=0;
 
+    static boolean netgunNear = false;
+    static boolean fulfillmentCenterNear = false;
+    static boolean designCenterNear = false;
+    static boolean HQNear = false;
+    static boolean refineryNear = false;
+    static boolean enemyLandscaperNear = false;
+    static boolean enemiesNear = false;
+    static boolean vaporatorNear = false;
+
 
 
     /**
