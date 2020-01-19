@@ -51,7 +51,7 @@ public class Miner3 extends RobotPlayer {
 
                 if (minerJob == 1) {
                     System.out.println("I AM A CONSTRUCTOR");
-                    if (!designCenterNear && !designCenterBuilt && HQNear && myLoc.distanceSquaredTo(hqLoc) > 2) {
+                    if (!designCenterNear && !designCenterBuilt && HQNear && myLoc.distanceSquaredTo(hqLoc) > 8) {
                         System.out.println("TESTER TRUE");
                         for (Direction dir : directions)
                             if (rc.isReady() && Utility.tryBuild(RobotType.DESIGN_SCHOOL, dir)) {
