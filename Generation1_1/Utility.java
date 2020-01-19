@@ -19,6 +19,7 @@ public class Utility extends RobotPlayer {
             return true;
         } else return false;
     }
+
     static void buildBuilding(RobotType building) throws GameActionException {
         for (Direction dir : directions)
             Utility.tryBuild(building, dir);
@@ -34,6 +35,7 @@ public class Utility extends RobotPlayer {
             enemyTeam = Team.B;
         }
     }
+
     static void friendlyRobotScan() {
         HQNear = false;
         designCenterNear = false;
@@ -77,4 +79,37 @@ public class Utility extends RobotPlayer {
             }
         }
     }
+
+    static boolean isWalledOff(MapLocation targetLocation) throws GameActionException {
+
+        MapLocation search_location1 = new MapLocation(targetLocation.x + -1, targetLocation.y + 1);
+        MapLocation search_location2 = new MapLocation(targetLocation.x + -1, targetLocation.y + 0);
+        MapLocation search_location3 = new MapLocation(targetLocation.x + -1, targetLocation.y - 1);
+        MapLocation search_location4 = new MapLocation(targetLocation.x + 0, targetLocation.y + 1);
+        MapLocation search_location5 = new MapLocation(targetLocation.x + 0, targetLocation.y - 1);
+        MapLocation search_location6 = new MapLocation(targetLocation.x + 1, targetLocation.y + 1);
+        MapLocation search_location7 = new MapLocation(targetLocation.x + 1, targetLocation.y + 0);
+        MapLocation search_location8 = new MapLocation(targetLocation.x + 1, targetLocation.y - 1);
+
+        if (isNotWall(search_location1)||isNotWall(search_location2)||isNotWall(search_location3)||isNotWall(search_location4)||isNotWall(search_location5)||isNotWall(search_location6)||isNotWall(search_location7)||isNotWall(search_location8)){
+            return false;
+        }
+        return true;
+    }
+
+
+    public static boolean isNotWall(MapLocation searchLocation) throws GameActionException {
+
+        if (!rc.canSenseLocation(searchLocation)) {
+            return false;
+        }
+        int destinationHeight = rc.senseElevation(searchLocation);
+        boolean notFlooded = !rc.senseFlooding(searchLocation);
+        boolean notTooHigh = !(Math.abs(destinationHeight - myHeight) > 3);
+        boolean notOccupied = (rc.senseRobotAtLocation(searchLocation) == null);
+        boolean onTheMap = rc.onTheMap(searchLocation);
+        return notFlooded && notTooHigh && notOccupied && onTheMap;
+
+    }
+
 }

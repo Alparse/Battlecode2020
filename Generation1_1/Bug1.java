@@ -145,7 +145,9 @@ public class Bug1 extends RobotPlayer {
             System.out.println("11");
         }
         System.out.println("13" + v);
-        trail.remove(trail.remove(0));
+        if (trail.size()>0) {
+            trail.remove(trail.remove(0));
+        }
         return v;
     }
     static MapLocation random_explore(Direction explore_dir) throws GameActionException {

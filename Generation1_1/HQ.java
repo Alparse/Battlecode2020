@@ -3,6 +3,7 @@ package Generation1_1;
 import battlecode.common.*;
 
 import java.lang.annotation.Target;
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.PriorityQueue;
 
@@ -15,8 +16,6 @@ public class HQ extends RobotPlayer {
     static int maxMiners=4;
     static int miners_built=0;
 
-
-
     static void runHQ() throws GameActionException {
         System.out.println(Clock.getBytecodeNum());
         myLoc = rc.getLocation();
@@ -26,10 +25,17 @@ public class HQ extends RobotPlayer {
         enemyRobots = rc.senseNearbyRobots(-1, enemyTeam);
         Utility.friendlyRobotScan();
         Utility.enemyRobotScan();
-        if(rc.getRoundNum()<5) {
-            Communications.sendHqLoc(myLoc);
-        }
 
+        Communications.checkMessagesQue();
+        Communications.clearMessageQue();
+        if(rc.getRoundNum()<5) {
+            Communications.sendHqLoc(myLoc,3);
+        }
+        if(messageQue.size()>0){
+            for(Message_Que m:messageQue) {
+                System.out.println(m.toString());
+            }
+        }
         if (enemiesNear) {
             PriorityQueue<Target_Que> myTargets = prioritizeTargets(enemyRobots);
             while (!myTargets.isEmpty()) {
@@ -46,7 +52,7 @@ public class HQ extends RobotPlayer {
             for (Direction dir : directions)
                 if (Utility.tryBuild(RobotType.MINER, dir)) {
                     RobotInfo built_robot=rc.senseRobotAtLocation(myLoc.add(dir));
-                    Communications.sendMinerJob(built_robot.ID,0);
+                    Communications.sendMinerJob(built_robot.ID,0,3);
                     miners_built = miners_built + 1;
                     break;
                 }
@@ -56,7 +62,7 @@ public class HQ extends RobotPlayer {
             for (Direction dir : directions)
                 if (Utility.tryBuild(RobotType.MINER, dir)) {
                     RobotInfo built_robot=rc.senseRobotAtLocation(myLoc.add(dir));
-                    Communications.sendMinerJob(built_robot.ID,1);
+                    Communications.sendMinerJob(built_robot.ID,1,3);
                     miners_built = miners_built + 1;
                     break;
                 }
@@ -65,7 +71,7 @@ public class HQ extends RobotPlayer {
             for (Direction dir : directions)
                 if (Utility.tryBuild(RobotType.MINER, dir)) {
                     RobotInfo built_robot=rc.senseRobotAtLocation(myLoc.add(dir));
-                    Communications.sendMinerJob(built_robot.ID,0);
+                    Communications.sendMinerJob(built_robot.ID,0,3);
                     miners_built = miners_built + 1;
                     break;
                 }

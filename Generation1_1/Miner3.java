@@ -17,18 +17,21 @@ public class Miner3 extends RobotPlayer {
     static boolean returningSoup = false;
     static boolean refiningSoup = false;
     static boolean designCenterBuilt = false;
+    static MapLocation refineryLock = null;
     static int minerJob = 0;
     static MapLocation lastSoupLoc = null;
 
-    enum minerState {SCANNINGSOUP, SEARCHINGSOUP, GOINGSOUP, MININGSOUP, RETURNINGSOUP, DEPOSITINGSOUP}
+    enum minerState {SCANNINGSOUP, SEARCHINGSOUP, GOINGSOUP, MININGSOUP, RETURNINGSOUP, DEPOSITINGSOUP, BUILDINGREFINERY}
 
     static minerState myState = minerState.SCANNINGSOUP;
 
     static void runMiner() throws GameActionException {
+        friendlyRobots = rc.senseNearbyRobots(-1, myTeam);
         mother_Nearby();
 
         if (hqLoc == null) {
             Communications.getHqLocFromBlockchain();
+            refineryLock = hqLoc;
         }
         if (rc.getRoundNum() > 0) {
             minerJob = Communications.getMinerJobFromBlockchain();
@@ -40,7 +43,6 @@ public class Miner3 extends RobotPlayer {
                 System.out.println("BYTECODE START " + Clock.getBytecodeNum());
                 myLoc = rc.getLocation();
                 myHeight = rc.senseElevation(myLoc);
-                mother_Nearby();
                 friendlyRobots = rc.senseNearbyRobots(-1, myTeam);
                 enemyRobots = rc.senseNearbyRobots(-1, enemyTeam);
                 Utility.friendlyRobotScan();
@@ -82,8 +84,8 @@ public class Miner3 extends RobotPlayer {
                     switch (myState) {
                         case SCANNINGSOUP:
                             System.out.println(minerState.SCANNINGSOUP);
-                            if(soupLoc!=null){
-                                myState=minerState.GOINGSOUP;
+                            if (soupLoc != null) {
+                                myState = minerState.GOINGSOUP;
                                 break;
                             }
                             MapLocation[] nearbySoup = rc.senseNearbySoup();
@@ -115,12 +117,15 @@ public class Miner3 extends RobotPlayer {
 
                         case GOINGSOUP:
                             System.out.println(minerState.GOINGSOUP);
-                            Direction move_dir = Bug1.BugGetNext(soupLoc);
-                            makeMove(move_dir);
-                            if (myLoc.isAdjacentTo(soupLoc)) {
+                            if (myLoc.isAdjacentTo(soupLoc) || myLoc == soupLoc) {
                                 myState = minerState.MININGSOUP;
+                            }else {
+                                Direction move_dir = Bug1.BugGetNext(soupLoc);
+                                makeMove(move_dir);
                             }
+
                             break;
+
                         case MININGSOUP:
                             System.out.println(minerState.MININGSOUP);
                             if (rc.canMineSoup(myLoc.directionTo(soupLoc))) {
@@ -131,44 +136,81 @@ public class Miner3 extends RobotPlayer {
                             if (rc.getSoupCarrying() == RobotType.MINER.soupLimit) {
                                 myState = minerState.RETURNINGSOUP;
                             }
-                            if (rc.senseSoup(soupLoc)==0){
-                                soupLoc=null;
+                            if (rc.senseSoup(soupLoc) == 0) {
+                                soupLoc = null;
                                 findSoup();
-                                myState=minerState.SCANNINGSOUP;
+                                myState = minerState.SCANNINGSOUP;
                             }
                             break;
 
                         case RETURNINGSOUP:
                             System.out.println(minerState.RETURNINGSOUP);
-                            move_dir = Bug1.BugGetNext(hqLoc);
+                            if (myLoc.distanceSquaredTo(refineryLock) < 9) {
+                                if (Utility.isWalledOff(refineryLock)) {
+                                    System.out.println("DESTINATION WALLED OFF");
+                                    myState = minerState.BUILDINGREFINERY;
+                                    RobotInfo currentRefinery = rc.senseRobotAtLocation(refineryLock);
+                                    for (RobotInfo r : friendlyRobots) {
+                                        if (r.ID != currentRefinery.ID && (r.type == RobotType.REFINERY || r.type == RobotType.HQ)) {
+                                            refineryLock = r.location;
+                                            System.out.println("FOUND ANOTHER REFINERY " + refineryLock);
+                                            myState = minerState.RETURNINGSOUP;
+                                        }
+                                    }
+
+                                }
+                            }
+                            //if(myLoc.distanceSquaredTo(refineryLock)>140&&!refineryNear){
+                               // myState=minerState.BUILDINGREFINERY;
+                          //  }
+                            Direction move_dir = Bug1.BugGetNext(refineryLock);
                             makeMove(move_dir);
-                            if (myLoc.isAdjacentTo(hqLoc)) {
+                            if (myLoc.isAdjacentTo(refineryLock)) {
                                 myState = minerState.DEPOSITINGSOUP;
                             }
                             break;
 
                         case DEPOSITINGSOUP:
-                            System.out.println(minerState.DEPOSITINGSOUP);
-                            if (rc.isReady() && rc.canDepositSoup(myLoc.directionTo(hqLoc))) {
-                                rc.depositSoup(myLoc.directionTo(hqLoc), RobotType.MINER.soupLimit);
+                            System.out.println(minerState.DEPOSITINGSOUP + " at " + refineryLock);
+                            if (rc.isReady() && rc.canDepositSoup(myLoc.directionTo(refineryLock))) {
+                                rc.depositSoup(myLoc.directionTo(refineryLock), RobotType.MINER.soupLimit);
                             }
                             if (rc.getSoupCarrying() == 0) {
                                 myState = minerState.SCANNINGSOUP;
                             }
                             break;
+
+                        case BUILDINGREFINERY:
+                            System.out.println(minerState.BUILDINGREFINERY);
+                            for (Direction dir : directions) {
+                                if (rc.isReady() && Utility.tryBuild(RobotType.REFINERY, dir)) {
+                                    refineryLock = myLoc.add(dir);
+                                    refineryNear=true;
+                                    if (rc.getSoupCarrying() > 0) {
+                                        myState = minerState.DEPOSITINGSOUP;
+                                    }
+                                    break;
+                                }
+                            }
+                            if (rc.getSoupCarrying() == 0) {
+                                myState = minerState.SCANNINGSOUP;
+                            }
+                            break;
+
                     }
+
                 }
 
-            System.out.println("BYTECODE END " + Clock.getBytecodeNum());
-        } catch(Exception e){
-            System.out.println(rc.getType() + " Exception");
+                System.out.println("BYTECODE END " + Clock.getBytecodeNum());
+            } catch (Exception e) {
+                System.out.println(rc.getType() + " Exception");
 
-            e.printStackTrace();
+                e.printStackTrace();
 
+            }
         }
-    }
 
-}
+    }
 
 
     public static void findSoup() throws GameActionException {
@@ -220,8 +262,6 @@ public class Miner3 extends RobotPlayer {
             }
         }
     }
-
-
 
 
     public static void makeMove(Direction move_dir) throws GameActionException {
@@ -277,22 +317,13 @@ public class Miner3 extends RobotPlayer {
         return totalSoup;
     }
 
-    static boolean mother_Nearby() {
-        RobotInfo[] nearby_Friendlies = rc.senseNearbyRobots(-1, myTeam);
-        for (RobotInfo r : nearby_Friendlies) {
-            if (myType == RobotType.MINER) {
-                if (r.type == RobotType.HQ) {
-                    hqLoc = r.location;
-                    headQuarters = hqLoc;
-                    return true;
-                }
-                if (r.type == RobotType.REFINERY) {
-                    hqLoc = r.location;
-                    return true;
-                }
+    static void mother_Nearby() {
+        for (RobotInfo r : friendlyRobots) {
+            if (r.type == RobotType.HQ) {
+                hqLoc = r.location;
+                refineryLock = hqLoc;
             }
         }
-        return false;
     }
 
 }
