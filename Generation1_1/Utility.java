@@ -2,6 +2,8 @@ package Generation1_1;
 
 import battlecode.common.*;
 
+import java.util.ArrayList;
+
 
 public class Utility extends RobotPlayer {
     static RobotController rc = RobotPlayer.rc;
@@ -91,7 +93,7 @@ public class Utility extends RobotPlayer {
         MapLocation search_location7 = new MapLocation(targetLocation.x + 1, targetLocation.y + 0);
         MapLocation search_location8 = new MapLocation(targetLocation.x + 1, targetLocation.y - 1);
 
-        if (isNotWall(search_location1)||isNotWall(search_location2)||isNotWall(search_location3)||isNotWall(search_location4)||isNotWall(search_location5)||isNotWall(search_location6)||isNotWall(search_location7)||isNotWall(search_location8)){
+        if (isNotWall(search_location1) || isNotWall(search_location2) || isNotWall(search_location3) || isNotWall(search_location4) || isNotWall(search_location5) || isNotWall(search_location6) || isNotWall(search_location7) || isNotWall(search_location8)) {
             return false;
         }
         return true;
@@ -109,6 +111,44 @@ public class Utility extends RobotPlayer {
         boolean notOccupied = (rc.senseRobotAtLocation(searchLocation) == null);
         boolean onTheMap = rc.onTheMap(searchLocation);
         return notFlooded && notTooHigh && notOccupied && onTheMap;
+
+    }
+
+
+    static void largeWall(MapLocation targetLocation) throws GameActionException {
+        ArrayList<MapLocation> largeWall = new ArrayList<>();
+        MapLocation search_location1 = new MapLocation(targetLocation.x + -2, targetLocation.y + 2);
+        MapLocation search_location2 = new MapLocation(targetLocation.x + -2, targetLocation.y + 1);
+        MapLocation search_location3 = new MapLocation(targetLocation.x + -2, targetLocation.y + 0);
+        MapLocation search_location4 = new MapLocation(targetLocation.x + -2, targetLocation.y - 1);
+        MapLocation search_location5 = new MapLocation(targetLocation.x + -2, targetLocation.y - 2);
+        MapLocation search_location6 = new MapLocation(targetLocation.x + -1, targetLocation.y - 2);
+        MapLocation search_location7 = new MapLocation(targetLocation.x + 0, targetLocation.y - 2);
+        MapLocation search_location8 = new MapLocation(targetLocation.x + 1, targetLocation.y - 2);
+        MapLocation search_location9 = new MapLocation(targetLocation.x + 2, targetLocation.y - 2);
+        MapLocation search_location10 = new MapLocation(targetLocation.x + 2, targetLocation.y - 1);
+        MapLocation search_location11 = new MapLocation(targetLocation.x + 2, targetLocation.y + 0);
+        MapLocation search_location12 = new MapLocation(targetLocation.x + 2, targetLocation.y + 1);
+        MapLocation search_location13 = new MapLocation(targetLocation.x + 2, targetLocation.y + 2);
+        MapLocation search_location14 = new MapLocation(targetLocation.x + 1, targetLocation.y + 2);
+        MapLocation search_location15 = new MapLocation(targetLocation.x + 0, targetLocation.y + 2);
+        MapLocation search_location16 = new MapLocation(targetLocation.x - 1, targetLocation.y + 2);
+        largeWall.add(search_location1);
+        largeWall.add(search_location2);
+        largeWall.add(search_location3);
+        largeWall.add(search_location4);
+        largeWall.add(search_location5);
+        largeWall.add(search_location6);
+        largeWall.add(search_location7);
+        largeWall.add(search_location8);
+        largeWall.add(search_location9);
+        largeWall.add(search_location10);
+        largeWall.add(search_location11);
+        largeWall.add(search_location12);
+        largeWall.add(search_location13);
+        largeWall.add(search_location14);
+        largeWall.add(search_location15);
+        largeWall.add(search_location16);
 
     }
 

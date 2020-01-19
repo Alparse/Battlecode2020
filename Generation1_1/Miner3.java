@@ -50,8 +50,8 @@ public class Miner3 extends RobotPlayer {
 
 
                 if (minerJob == 1) {
-                    System.out.println("I AM A CONSTRUCTOR");
-                    if (!designCenterNear && !designCenterBuilt && HQNear && myLoc.distanceSquaredTo(hqLoc) > 8) {
+                    System.out.println("I AM A CONSTRUCTOR "+(myLoc.distanceSquaredTo(hqLoc)));
+                    if (!designCenterNear && !designCenterBuilt && myLoc.distanceSquaredTo(hqLoc) > 8&&myLoc.distanceSquaredTo(hqLoc)<=10) {
                         System.out.println("TESTER TRUE");
                         for (Direction dir : directions)
                             if (rc.isReady() && Utility.tryBuild(RobotType.DESIGN_SCHOOL, dir)) {
@@ -63,19 +63,25 @@ public class Miner3 extends RobotPlayer {
                             }
                     }
 
-                    if (myLoc.distanceSquaredTo(hqLoc) < 13) {
-                        myLoc = rc.getLocation();
-                        if (myLoc.distanceSquaredTo(headQuarters) > 8) {
-                            explore_Dir = myLoc.directionTo(hqLoc).rotateRight();
-                        } else {
-                            explore_Dir = myLoc.directionTo(headQuarters).opposite();
-
+                    if (myLoc.distanceSquaredTo(hqLoc) > 13) {
+                        explore_Dir=myLoc.directionTo(hqLoc);
+                    }
+                    if (myLoc.distanceSquaredTo(hqLoc)<=13&&myLoc.distanceSquaredTo(hqLoc)>8){
+                        explore_Dir=myLoc.directionTo(hqLoc).rotateRight().rotateRight();
+                    }
+                    if (myLoc.distanceSquaredTo(hqLoc)<=8){
+                        System.out.println("<8");
+                        explore_Dir=myLoc.directionTo(hqLoc).opposite();
+                    }
+                    if(rc.isReady()&&rc.canMove(explore_Dir)){
+                        makeMove(explore_Dir);
+                    }
+                    if(rc.isReady()&&!rc.canMove(explore_Dir)){
+                        while(!rc.canMove(explore_Dir)) {
+                            explore_Dir = explore_Dir.rotateRight();
                         }
+                        makeMove(explore_Dir);
                     }
-                    if (myLoc.distanceSquaredTo(hqLoc) >= 25) {
-                        explore_Dir = myLoc.directionTo(hqLoc);
-                    }
-                    makeMove(explore_Dir);
                 }
 
                 if (minerJob == 0) {
