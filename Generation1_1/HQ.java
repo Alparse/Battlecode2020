@@ -42,7 +42,7 @@ public class HQ extends RobotPlayer {
             }
         }
 
-        if (miners_built < 3) {
+        if (miners_built < 3&&rc.getRoundNum()>1) {
             for (Direction dir : directions)
                 if (Utility.tryBuild(RobotType.MINER, dir)) {
                     RobotInfo built_robot=rc.senseRobotAtLocation(myLoc.add(dir));
@@ -51,7 +51,8 @@ public class HQ extends RobotPlayer {
                     break;
                 }
         }
-        if (miners_built ==3) {
+        if (miners_built ==3&&rc.getTeamSoup()>100) {
+            System.out.println(("3rd bot"));
             for (Direction dir : directions)
                 if (Utility.tryBuild(RobotType.MINER, dir)) {
                     RobotInfo built_robot=rc.senseRobotAtLocation(myLoc.add(dir));

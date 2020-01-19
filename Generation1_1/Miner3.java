@@ -16,10 +16,13 @@ public class Miner3 extends RobotPlayer {
     static boolean miningSoup = false;
     static boolean returningSoup = false;
     static boolean refiningSoup = false;
-    static boolean designCenterBuilt=false;
-    static int minerJob=0;
-    static MapLocation lastSoupLoc=null;
+    static boolean designCenterBuilt = false;
+    static int minerJob = 0;
+    static MapLocation lastSoupLoc = null;
 
+    enum minerState {SCANNINGSOUP, SEARCHINGSOUP, GOINGSOUP, MININGSOUP, RETURNINGSOUP, DEPOSITINGSOUP}
+
+    static minerState myState = minerState.SCANNINGSOUP;
 
     static void runMiner() throws GameActionException {
         mother_Nearby();
@@ -27,11 +30,14 @@ public class Miner3 extends RobotPlayer {
         if (hqLoc == null) {
             Communications.getHqLocFromBlockchain();
         }
-
+        if (rc.getRoundNum() > 0) {
+            minerJob = Communications.getMinerJobFromBlockchain();
+        }
+        System.out.println("MY JOB IS " + minerJob);
 
         while (true) {
             try {
-                System.out.println("BYTECODE START "+Clock.getBytecodeNum());
+                System.out.println("BYTECODE START " + Clock.getBytecodeNum());
                 myLoc = rc.getLocation();
                 myHeight = rc.senseElevation(myLoc);
                 mother_Nearby();
@@ -39,21 +45,18 @@ public class Miner3 extends RobotPlayer {
                 enemyRobots = rc.senseNearbyRobots(-1, enemyTeam);
                 Utility.friendlyRobotScan();
                 Utility.enemyRobotScan();
-                if (rc.getRoundNum()>0){
-                    minerJob=Communications.getMinerJobFromBlockchain();
-                }
 
 
-                if (minerJob==1) {
+                if (minerJob == 1) {
                     System.out.println("I AM A CONSTRUCTOR");
-                    if (!designCenterNear&&!designCenterBuilt&& HQNear && myLoc.distanceSquaredTo(hqLoc) > 2) {
+                    if (!designCenterNear && !designCenterBuilt && HQNear && myLoc.distanceSquaredTo(hqLoc) > 2) {
                         System.out.println("TESTER TRUE");
                         for (Direction dir : directions)
                             if (rc.isReady() && Utility.tryBuild(RobotType.DESIGN_SCHOOL, dir)) {
                                 hqLoc = myLoc.add(dir);
                                 designCenterNear = true;
-                                designCenterBuilt=true;
-                                minerJob=0;
+                                designCenterBuilt = true;
+                                minerJob = 0;
                                 break;
                             }
                     }
@@ -73,100 +76,99 @@ public class Miner3 extends RobotPlayer {
                     makeMove(explore_Dir);
                 }
 
-                if (minerJob==0) {
+                if (minerJob == 0) {
                     System.out.println("I AM A MINER");
 
-
-                    if (!foundSoup && !goingtoSoup && !miningSoup && !returningSoup && !refiningSoup) {
-                        System.out.println("LOOKING FOR SOUP");
-                        MapLocation[] nearbySoup=rc.senseNearbySoup();
-                        if (nearbySoup.length>0) {
-                            MapLocation nearestSoup=null;
-                            int range_Soup=999;
-                            for (MapLocation l : nearbySoup) {
-                                int new_range_Soup=l.distanceSquaredTo(myLoc);
-                                if (new_range_Soup<range_Soup) {
-                                    nearestSoup = l;
-                                    range_Soup=new_range_Soup;
-                                    soupLoc=l;
+                    switch (myState) {
+                        case SCANNINGSOUP:
+                            System.out.println(minerState.SCANNINGSOUP);
+                            if(soupLoc!=null){
+                                myState=minerState.GOINGSOUP;
+                                break;
+                            }
+                            MapLocation[] nearbySoup = rc.senseNearbySoup();
+                            if (nearbySoup.length == 0) {
+                                myState = minerState.SEARCHINGSOUP;
+                            }
+                            if (nearbySoup.length > 0) {
+                                MapLocation nearestSoup = null;
+                                int range_Soup = 999;
+                                for (MapLocation l : nearbySoup) {
+                                    int new_range_Soup = l.distanceSquaredTo(myLoc);
+                                    if (new_range_Soup < range_Soup) {
+                                        nearestSoup = l;
+                                        range_Soup = new_range_Soup;
+                                        soupLoc = l;
+                                        myState = minerState.GOINGSOUP;
+                                    }
                                 }
                             }
-                        }
-                        if (soupLoc!=null){
-                            foundSoup=true;
-                        }
-                        lastBuggingDirection = null;
-                        bugPathState = BugPathState.NONE;
-                        if (foundSoup) {
-                            miningSoup = false;
-                            returningSoup = false;
-                            refiningSoup = false;
-                            goingtoSoup = true;
-                        }
-                        if (!foundSoup) {
-                            System.out.println("NO SOOP FOR YOU ");
+                            break;
+                        case SEARCHINGSOUP:
+                            System.out.println(minerState.SEARCHINGSOUP);
                             while (!rc.canMove(explore_Dir)) {
                                 explore_Dir = randomDirection();
                             }
                             makeMove(explore_Dir);
-                        }
-                    }
-                    if (foundSoup && goingtoSoup && !miningSoup && !returningSoup && !refiningSoup) {
-                        System.out.println("GOING TO  SOUP AT " + soupLoc);
-                        myLoc = rc.getLocation();
+                            myState = minerState.SCANNINGSOUP;
+                            break;
 
-                        goToClosestSoup(soupLoc);
-                    }
-                    if (foundSoup && !goingtoSoup && miningSoup && !returningSoup && !refiningSoup) {
-                        System.out.println("MINING SOUP AT " + soupLoc);
-                        mine_Soup();
-                        lastBuggingDirection = null;
-                        bugPathState = BugPathState.NONE;
-                    }
-                    if (!goingtoSoup && !miningSoup && returningSoup && !refiningSoup) {
-                        int soup = fullSoupScan();
-                        if (rc.getRoundNum() > 200 && soup > 200) {
-                            if (!refineryNear && !HQNear) {
-                                for (Direction dir : directions) {
-                                    if (Utility.tryBuild(RobotType.REFINERY, dir)) {
-                                        hqLoc = myLoc.add(dir);
-                                        refineryNear = true;
-                                        break;
-
-                                    }
+                        case GOINGSOUP:
+                            System.out.println(minerState.GOINGSOUP);
+                            Direction move_dir = Bug1.BugGetNext(soupLoc);
+                            makeMove(move_dir);
+                            if (myLoc.isAdjacentTo(soupLoc)) {
+                                myState = minerState.MININGSOUP;
+                            }
+                            break;
+                        case MININGSOUP:
+                            System.out.println(minerState.MININGSOUP);
+                            if (rc.canMineSoup(myLoc.directionTo(soupLoc))) {
+                                if (rc.isReady()) {
+                                    rc.mineSoup(myLoc.directionTo(soupLoc));
                                 }
                             }
-                        }
-                    }
-                    System.out.println("RETURNING SOUP TO " + hqLoc+" With Soup= "+rc.getSoupCarrying());
-                    returnSoup(hqLoc);
-
-                    if (!goingtoSoup && !miningSoup && !returningSoup && refiningSoup) {
-                        if (!refineryNear && !HQNear) {
-                            System.out.println("TRYING TO BUILD REFINERY 2");
-                            for (Direction dir : directions) {
-                                if (Utility.tryBuild(RobotType.REFINERY, dir)) {
-                                    System.out.println("TRYING TO BUILD REFINERY 3");
-                                    hqLoc = myLoc.add(dir);
-                                    refineryNear = true;
-                                    break;
-                                }
+                            if (rc.getSoupCarrying() == RobotType.MINER.soupLimit) {
+                                myState = minerState.RETURNINGSOUP;
                             }
-                        }
-                        System.out.println("REFINING SOUP AT " + soupLoc);
-                        refine_Soup();
+                            if (rc.senseSoup(soupLoc)==0){
+                                soupLoc=null;
+                                findSoup();
+                                myState=minerState.SCANNINGSOUP;
+                            }
+                            break;
+
+                        case RETURNINGSOUP:
+                            System.out.println(minerState.RETURNINGSOUP);
+                            move_dir = Bug1.BugGetNext(hqLoc);
+                            makeMove(move_dir);
+                            if (myLoc.isAdjacentTo(hqLoc)) {
+                                myState = minerState.DEPOSITINGSOUP;
+                            }
+                            break;
+
+                        case DEPOSITINGSOUP:
+                            System.out.println(minerState.DEPOSITINGSOUP);
+                            if (rc.isReady() && rc.canDepositSoup(myLoc.directionTo(hqLoc))) {
+                                rc.depositSoup(myLoc.directionTo(hqLoc), RobotType.MINER.soupLimit);
+                            }
+                            if (rc.getSoupCarrying() == 0) {
+                                myState = minerState.SCANNINGSOUP;
+                            }
+                            break;
                     }
                 }
-                System.out.println("BYTECODE END "+Clock.getBytecodeNum());
-            } catch (Exception e) {
-                System.out.println(rc.getType() + " Exception");
 
-                e.printStackTrace();
+            System.out.println("BYTECODE END " + Clock.getBytecodeNum());
+        } catch(Exception e){
+            System.out.println(rc.getType() + " Exception");
 
-            }
+            e.printStackTrace();
+
         }
-
     }
+
+}
 
 
     public static void findSoup() throws GameActionException {
@@ -189,7 +191,6 @@ public class Miner3 extends RobotPlayer {
                                 int soup = rc.senseSoup(search_location);
                                 if (soup > 0) {
                                     soupLoc = search_location;
-                                    foundSoup = true;
                                     System.out.println("FOUND SOUP WITH SOUP SCAN");
                                     break outerloop;
                                 }
@@ -203,7 +204,6 @@ public class Miner3 extends RobotPlayer {
                                         int soup = rc.senseSoup(search_location);
                                         if (soup > 0) {
                                             soupLoc = search_location;
-                                            foundSoup = true;
                                             System.out.println("FOUND SOUP WITH SOUP SCAN");
                                             break outerloop;
                                         }
@@ -221,130 +221,7 @@ public class Miner3 extends RobotPlayer {
         }
     }
 
-    public static void goToClosestSoup(MapLocation souploc) throws GameActionException {
-        System.out.println("LINE  1 SoupLoc  " + soupLoc);
-        myLoc = rc.getLocation();
-        if (myLoc.isAdjacentTo(souploc)) {
-            lastBuggingDirection = null;
-            bugPathState = BugPathState.NONE;
-        }
-        if (rc.canSenseLocation(soupLoc) && rc.senseSoup(soupLoc) == 0) {
-            soupLoc = null;
-            findSoup();
-            foundSoup = false;
-            goingtoSoup = false;
-            miningSoup = false;
-            returningSoup = false;
-            refiningSoup = false;
-            return;
-        }
 
-        if (soupLoc != null) {
-            if (rc.canSenseLocation(soupLoc) && soupLoc.isAdjacentTo(myLoc) && rc.senseSoup(soupLoc) > 0) {
-
-                foundSoup = true;
-                goingtoSoup = false;
-                miningSoup = true;
-                returningSoup = false;
-                refiningSoup = false;
-                return;
-            }
-        }
-        if (rc.canSenseLocation(soupLoc) && !(soupLoc.isAdjacentTo(myLoc)) && rc.senseSoup(soupLoc) > 0) {
-            System.out.println(soupLoc);
-            foundSoup = true;
-            goingtoSoup = true;
-            miningSoup = false;
-            returningSoup = false;
-            refiningSoup = false;
-
-        }
-        Direction move_dir = Bug1.BugGetNext(soupLoc);
-        makeMove(move_dir);
-    }
-
-
-    static void mine_Soup() throws GameActionException {
-        myLoc = rc.getLocation();
-        System.out.println("MINING SOUP");
-        if(rc.canSenseLocation(soupLoc)){
-            if (rc.getSoupCarrying() == RobotType.MINER.soupLimit && rc.senseSoup(soupLoc) > 0) {
-                foundSoup = true;
-                goingtoSoup = false;
-                miningSoup = false;
-                returningSoup = true;
-                refiningSoup = false;
-                return;
-            }
-            if (rc.senseSoup(soupLoc) == 0 && rc.getSoupCarrying() < RobotType.MINER.soupLimit) {
-                findSoup();
-                //soupLoc = null;
-                foundSoup = false;
-                goingtoSoup = false;
-                miningSoup = false;
-                returningSoup = false;
-                refiningSoup = false;
-                return;
-            }
-            if (rc.senseSoup(soupLoc) == 0) {
-                findSoup();
-                //soupLoc = null;
-                foundSoup = false;
-                goingtoSoup = false;
-                miningSoup = false;
-                returningSoup = false;
-                refiningSoup = false;
-                return;
-            }
-        }
-
-
-        if (rc.canMineSoup(myLoc.directionTo(soupLoc)) && !returningSoup) {
-            foundSoup = true;
-            goingtoSoup = false;
-            miningSoup = true;
-            returningSoup = false;
-            refiningSoup = false;
-            if (rc.isReady()) {
-                rc.mineSoup(myLoc.directionTo(soupLoc));
-            }
-            return;
-        }
-
-    }
-
-    static void returnSoup(MapLocation hqloc) throws GameActionException {
-        if (myLoc.isAdjacentTo(hqLoc)) {
-            goingtoSoup = false;
-            miningSoup = false;
-            returningSoup = false;
-            refiningSoup = true;
-            bugPathState = BugPathState.NONE;
-            return;
-        }
-        //Direction move_dir = myLoc.directionTo(hqLoc);
-        System.out.println("BUG MOVE DIR start");
-        Direction move_dir = Bug1.BugGetNext(hqLoc);
-        System.out.println("BUG MOVE DIR " + move_dir);
-        makeMove(move_dir);
-    }
-
-    static void refine_Soup() throws GameActionException {
-        myLoc = rc.getLocation();
-        System.out.println("REFINING SOUP" + rc.getSoupCarrying());
-        if (rc.isReady() && rc.canDepositSoup(myLoc.directionTo(hqLoc))) {
-            rc.depositSoup(myLoc.directionTo(hqLoc), RobotType.MINER.soupLimit);
-            System.out.println("TRYING TO DEPOSIT SOUP");
-        }
-        if (rc.getSoupCarrying() == 0) {
-            //soupLoc = null;
-            foundSoup = false;
-            goingtoSoup = false;
-            miningSoup = false;
-            returningSoup = false;
-            refiningSoup = false;
-        }
-    }
 
 
     public static void makeMove(Direction move_dir) throws GameActionException {
@@ -417,8 +294,6 @@ public class Miner3 extends RobotPlayer {
         }
         return false;
     }
-
-
 
 }
 
