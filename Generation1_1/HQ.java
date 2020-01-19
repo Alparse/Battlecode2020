@@ -11,7 +11,7 @@ import java.util.PriorityQueue;
 
 public class HQ extends RobotPlayer {
     static RobotController rc = RobotPlayer.rc;
-    static int minerTarget=6+height/20;
+    static int minerTarget=4+height/20;
     static int constructorTarget=2;
     static int maxMiners=4;
     static int miners_built=0;

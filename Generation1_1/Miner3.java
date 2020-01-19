@@ -116,10 +116,11 @@ public class Miner3 extends RobotPlayer {
                             break;
 
                         case GOINGSOUP:
+                            //scanForRefinery();
                             System.out.println(minerState.GOINGSOUP);
                             if (myLoc.isAdjacentTo(soupLoc) || myLoc == soupLoc) {
                                 myState = minerState.MININGSOUP;
-                            }else {
+                            } else {
                                 Direction move_dir = Bug1.BugGetNext(soupLoc);
                                 makeMove(move_dir);
                             }
@@ -161,8 +162,8 @@ public class Miner3 extends RobotPlayer {
                                 }
                             }
                             //if(myLoc.distanceSquaredTo(refineryLock)>140&&!refineryNear){
-                               // myState=minerState.BUILDINGREFINERY;
-                          //  }
+                           // myState=minerState.BUILDINGREFINERY;
+                            //}
                             Direction move_dir = Bug1.BugGetNext(refineryLock);
                             makeMove(move_dir);
                             if (myLoc.isAdjacentTo(refineryLock)) {
@@ -185,7 +186,7 @@ public class Miner3 extends RobotPlayer {
                             for (Direction dir : directions) {
                                 if (rc.isReady() && Utility.tryBuild(RobotType.REFINERY, dir)) {
                                     refineryLock = myLoc.add(dir);
-                                    refineryNear=true;
+                                    refineryNear = true;
                                     if (rc.getSoupCarrying() > 0) {
                                         myState = minerState.DEPOSITINGSOUP;
                                     }
@@ -259,6 +260,18 @@ public class Miner3 extends RobotPlayer {
 
 
                 }
+            }
+        }
+    }
+
+    public static void scanForRefinery(){
+        if (friendlyRobots.length>0){
+        for (RobotInfo r:friendlyRobots){
+            if (r.type==RobotType.REFINERY) {
+                if ((r.location.distanceSquaredTo(myLoc)) < refineryLock.distanceSquaredTo(myLoc)) {
+                    refineryLock = r.location;
+                }
+            }
             }
         }
     }

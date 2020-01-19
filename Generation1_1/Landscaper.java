@@ -68,14 +68,40 @@ public class Landscaper extends RobotPlayer {
             }
         }
         if (levee_builder && !myLoc.isAdjacentTo(hqLoc)) {
-
-            System.out.println("LEVEE BUILDER" + hqLoc);
-            System.out.println("BUG MOVE DIR start");
-            Direction move_dir = Bug1.BugGetNext(hqLoc);
-            System.out.println("BUG MOVE DIR " + move_dir);
-
-            makeMove(move_dir);
-
+            RobotInfo enemyBuild=enemyBuildingNear();
+            if (enemyBuild==null){
+                System.out.println("LEVEE BUILDER" + hqLoc);
+                System.out.println("BUG MOVE DIR start");
+                Direction move_dir = Bug1.BugGetNext(hqLoc);
+                System.out.println("BUG MOVE DIR " + move_dir);
+                makeMove(move_dir);
+            }
+            if (enemyBuild!=null&&!myLoc.isAdjacentTo(enemyBuild.location)) {
+                System.out.println("ATTACK ENEMY BUILDING" + enemyBuild.location);
+                System.out.println("BUG MOVE DIR start");
+                Direction move_dir = Bug1.BugGetNext(enemyBuild.location);
+                System.out.println("BUG MOVE DIR " + move_dir);
+                makeMove(move_dir);
+            }
+            if(enemyBuild!=null&&myLoc.isAdjacentTo(enemyBuild.location)){
+                        if (rc.canDigDirt(Direction.CENTER)) {
+                            if (rc.isReady()) {
+                                rc.digDirt(Direction.CENTER);
+                            }
+                        }
+            }
+            if (rc.getDirtCarrying() == RobotType.LANDSCAPER.dirtLimit) {
+                if(enemyBuild!=null) {
+                    Direction deposit_dir = myLoc.directionTo(enemyBuild.location);
+                    if (deposit_dir != null) {
+                        if (rc.canDepositDirt(deposit_dir)) {
+                            if (rc.isReady()) {
+                                rc.depositDirt(deposit_dir);
+                            }
+                        }
+                    }
+                }
+            }
         }
         System.out.println("BYTECODE END "+Clock.getBytecodeNum());
 
@@ -128,6 +154,28 @@ public class Landscaper extends RobotPlayer {
             return true;
         }
         return false;
+    }
+    static RobotInfo enemyBuildingNear(){
+        if (enemyRobots.length>0){
+            for(RobotInfo r:enemyRobots){
+                if (r.type==RobotType.DESIGN_SCHOOL){
+                    return r;
+                }
+                if (r.type==RobotType.HQ){
+                    return r;
+                }
+                if (r.type==RobotType.FULFILLMENT_CENTER){
+                    return r;
+                }
+                if (r.type==RobotType.VAPORATOR){
+                    return r;
+                }
+                if (r.type==RobotType.NET_GUN){
+                    return r;
+                }
+            }
+        }
+        return null;
     }
 
 }
