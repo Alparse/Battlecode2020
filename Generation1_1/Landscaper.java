@@ -3,6 +3,8 @@ package Generation1_1;
 import battlecode.common.*;
 import gnu.trove.impl.sync.TSynchronizedShortByteMap;
 
+import java.awt.*;
+
 
 public class Landscaper extends RobotPlayer {
     static RobotController rc = RobotPlayer.rc;
@@ -194,9 +196,25 @@ public class Landscaper extends RobotPlayer {
                         makeMove(move_dir);
                     }
                     if (enemyBuild != null && myLoc.isAdjacentTo(enemyBuild.location)) {
-                        if (rc.canDigDirt(Direction.CENTER)) {
-                            if (rc.isReady()) {
-                                rc.digDirt(Direction.CENTER);
+                        if (enemyBuild.type== RobotType.HQ) {
+                            if (rc.canDigDirt(Direction.CENTER)) {
+                                if (rc.isReady()) {
+                                    rc.digDirt(Direction.CENTER);
+                                }
+                            }
+                        }
+                        if (enemyBuild.type!= RobotType.HQ) {
+                            for (Direction dir : directions)
+                                if (rc.canDigDirt(dir)) {
+                                    if (rc.isReady()) {
+                                        rc.digDirt(dir);
+                                        return;
+                                    }
+                                }
+                            if (rc.canDigDirt(Direction.CENTER)) {
+                                if (rc.isReady()) {
+                                    rc.digDirt(Direction.CENTER);
+                                }
                             }
                         }
                     }
