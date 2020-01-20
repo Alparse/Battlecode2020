@@ -193,6 +193,20 @@ public class Miner3 extends RobotPlayer {
 
                         case BUILDINGREFINERY:
                             System.out.println(minerState.BUILDINGREFINERY);
+                            if(refineryNear){
+                                for (RobotInfo r:friendlyRobots){
+                                    if(r.type==RobotType.REFINERY){
+                                        refineryLock=r.location;
+                                    }
+                                }
+                                if (rc.getSoupCarrying() > 0) {
+                                    myState = minerState.RETURNINGSOUP;
+                                }
+                                if (rc.getSoupCarrying() == 0) {
+                                    myState = minerState.SCANNINGSOUP;
+                                }
+                                break;
+                            }
                             for (Direction dir : directions) {
                                 if (rc.isReady() && Utility.tryBuild(RobotType.REFINERY, dir)) {
                                     refineryLock = myLoc.add(dir);
