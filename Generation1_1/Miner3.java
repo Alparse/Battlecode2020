@@ -197,6 +197,7 @@ public class Miner3 extends RobotPlayer {
                                 for (RobotInfo r:friendlyRobots){
                                     if(r.type==RobotType.REFINERY){
                                         refineryLock=r.location;
+                                        refineryNear=true;
                                     }
                                 }
                                 if (rc.getSoupCarrying() > 0) {

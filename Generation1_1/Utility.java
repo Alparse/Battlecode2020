@@ -108,7 +108,7 @@ public class Utility extends RobotPlayer {
         }
         int destinationHeight = rc.senseElevation(searchLocation);
         boolean notFlooded = !rc.senseFlooding(searchLocation);
-        boolean notTooHigh = !(Math.abs(destinationHeight - myHeight) > 3);
+        boolean notTooHigh = !(Math.abs(destinationHeight - myHeight) > 6);
         boolean notOccupied = (rc.senseRobotAtLocation(searchLocation) == null);
         boolean onTheMap = rc.onTheMap(searchLocation);
         return notFlooded && notTooHigh && notOccupied && onTheMap;
