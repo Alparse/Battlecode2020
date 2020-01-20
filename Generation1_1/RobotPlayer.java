@@ -44,6 +44,7 @@ public strictfp class RobotPlayer {
     static boolean enemiesNear = false;
     static boolean vaporatorNear = false;
     static ArrayList<Message_Que> messageQue=new ArrayList<>();
+    static ArrayList<MapLocation> largeWall=new ArrayList<>();
 
 
 

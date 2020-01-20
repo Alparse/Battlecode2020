@@ -1,6 +1,7 @@
 package Generation1_1;
 
 import battlecode.common.*;
+import gnu.trove.impl.sync.TSynchronizedShortByteMap;
 
 
 public class Landscaper extends RobotPlayer {
@@ -9,107 +10,223 @@ public class Landscaper extends RobotPlayer {
     static boolean levee_builder = true;
     static boolean grave_digger = false;
     static boolean at_spot = false;
+    static int landScaperJob = 99;
+    static boolean checkedXYSymetricEnemyHQ = false;
+    static boolean checkedXSymetricEnemyHQ = false;
+    static boolean checkedYSymetricEnemyHQ = false;
+    static MapLocation enemyHQGuess = null;
+    static MapLocation enemyHQ = null;
+    static boolean communicatedEnemyHQ = false;
 
 
     static void runLandscaper() throws GameActionException {
-        System.out.println("BYTECODE START "+Clock.getBytecodeNum());
-        myLoc = rc.getLocation();
-        myHeight = rc.senseElevation(myLoc);
-        mother_Nearby();
-        friendlyRobots = rc.senseNearbyRobots(-1, myTeam);
-        enemyRobots = rc.senseNearbyRobots(-1, enemyTeam);
-        Utility.friendlyRobotScan();
-        Utility.enemyRobotScan();
-
+        if (rc.getRoundNum() > 0) {
+            landScaperJob = Communications.getLandScaperFromBlockchain();
+            System.out.println("MY JOB IS " + landScaperJob);
+        }
         if (hqLoc == null) {
             hqLoc = Communications.getHqLocFromBlockchain();
         }
 
-        System.out.println("HQ LOC " + hqLoc);
-        Direction dig_dirt_dir = null;
-        if (myLoc.isAdjacentTo(hqLoc)) {
-            System.out.println("AT SPOT");
-            if (enemyLandscaperNear||rc.getRoundNum()>200) {
+        System.out.println("BYTECODE START " + Clock.getBytecodeNum());
+        myLoc = rc.getLocation();
+        myHeight = rc.senseElevation(myLoc);
+        mother_Nearby();
 
-                dig_dirt_dir = hqLoc.directionTo(myLoc);
-                if (buildingBeingBuried(hqLoc)) {
-                    dig_dirt_dir = myLoc.directionTo(hqLoc);
+        while (true) {
+            try {
+                if (landScaperJob == 99) {
+                    landScaperJob = Communications.getLandScaperFromBlockchain();
                 }
-                if (rc.canDigDirt(dig_dirt_dir)) {
-                    if (rc.isReady()) {
-                        rc.digDirt(dig_dirt_dir);
+                Communications.checkMessagesQue();
+                Communications.clearMessageQue();
+                friendlyRobots = rc.senseNearbyRobots(-1, myTeam);
+                enemyRobots = rc.senseNearbyRobots(-1, enemyTeam);
+                Utility.friendlyRobotScan();
+                Utility.enemyRobotScan();
+                myLoc=rc.getLocation();
+                myHeight=rc.senseElevation(myLoc);
+                if (landScaperJob == 10 || landScaperJob == 99) {
+                    System.out.println("STARTING LANDSCAPE 10 ");
+                    if (hqLoc == null) {
+                        hqLoc = Communications.getHqLocFromBlockchain();
                     }
-                } else {
-                    for (Direction d : directions) {
-                        if (rc.canDigDirt(dig_dirt_dir)) {
-                            if (rc.isReady()) {
-                                rc.digDirt(dig_dirt_dir);
+
+                    System.out.println("HQ LOC " + hqLoc);
+                    if (largeWall.size() == 0) {
+                        largeWall = Utility.largeWall(hqLoc);
+                        System.out.println(largeWall);
+                    }
+                    Direction dig_dirt_dir = null;
+                    if (myLoc.isAdjacentTo(hqLoc)) {
+                        System.out.println("AT SPOT");
+                        if (enemyLandscaperNear || rc.getRoundNum() > 200) {
+
+                            dig_dirt_dir = hqLoc.directionTo(myLoc);
+                            if (buildingBeingBuried(hqLoc)) {
+                                dig_dirt_dir = myLoc.directionTo(hqLoc);
+                            }
+                            if (rc.canDigDirt(dig_dirt_dir)) {
+                                if (rc.isReady()) {
+                                    rc.digDirt(dig_dirt_dir);
+                                }
+                            } else {
+                                for (Direction d : directions) {
+                                    if (rc.canDigDirt(dig_dirt_dir)) {
+                                        if (rc.isReady()) {
+                                            rc.digDirt(dig_dirt_dir);
+                                        }
+                                    }
+                                }
+
+                            }
+                        }
+                        if (rc.getDirtCarrying() == RobotType.LANDSCAPER.dirtLimit) {
+                            Direction deposit_dir = dirtScan();
+                            if (deposit_dir != null) {
+                                if (rc.canDepositDirt(deposit_dir)) {
+                                    if (rc.isReady()) {
+                                        rc.depositDirt(deposit_dir);
+                                    }
+                                }
+                            }
+                            if (rc.canDepositDirt(Direction.CENTER)) {
+                                if (rc.isReady()) {
+                                    rc.depositDirt(Direction.CENTER);
+                                }
+
+                            }
+                        }
+                    }
+                    if (levee_builder && !myLoc.isAdjacentTo(hqLoc)) {
+                        RobotInfo enemyBuild = enemyBuildingNear();
+                        if (enemyBuild == null) {
+                            System.out.println("LEVEE BUILDER" + hqLoc);
+                            System.out.println("BUG MOVE DIR start");
+                            Direction move_dir = Bug1.BugGetNext(hqLoc);
+                            System.out.println("BUG MOVE DIR " + move_dir);
+                            makeMove(move_dir);
+                        }
+                        if (enemyBuild != null && !myLoc.isAdjacentTo(enemyBuild.location)) {
+                            System.out.println("ATTACK ENEMY BUILDING" + enemyBuild.location);
+                            System.out.println("BUG MOVE DIR start");
+                            Direction move_dir = Bug1.BugGetNext(enemyBuild.location);
+                            System.out.println("BUG MOVE DIR " + move_dir);
+                            makeMove(move_dir);
+                        }
+                        if (enemyBuild != null && myLoc.isAdjacentTo(enemyBuild.location)) {
+                            if (rc.canDigDirt(Direction.CENTER)) {
+                                if (rc.isReady()) {
+                                    rc.digDirt(Direction.CENTER);
+                                }
+                            }
+                        }
+                        if (rc.getDirtCarrying() == RobotType.LANDSCAPER.dirtLimit) {
+                            if (enemyBuild != null) {
+                                Direction deposit_dir = myLoc.directionTo(enemyBuild.location);
+                                if (deposit_dir != null) {
+                                    if (rc.canDepositDirt(deposit_dir)) {
+                                        if (rc.isReady()) {
+                                            rc.depositDirt(deposit_dir);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (landScaperJob == 11) {
+                    System.out.println("STARTING HUNT " + enemyHQ);
+                    RobotInfo enemyBuild = enemyBuildingNear();
+                    if (enemyHQ == null) {
+                        if (!checkedXYSymetricEnemyHQ) {
+                            enemyHQGuess = Utility.enemyXYSymmetric(hqLoc);
+                            Direction move_dir = Bug1.BugGetNext(enemyHQGuess);
+                            makeMove(move_dir);
+                            if (rc.canSenseLocation(enemyHQGuess)) {
+                                checkedXYSymetricEnemyHQ = true;
+                                System.out.println("1");
+                            }
+                        }
+                        if (checkedXYSymetricEnemyHQ && !checkedXSymetricEnemyHQ) {
+                            enemyHQGuess = Utility.enemyXSymmetric(hqLoc);
+                            Direction move_dir = Bug1.BugGetNext(enemyHQGuess);
+                            makeMove(move_dir);
+                            if (rc.canSenseLocation(enemyHQGuess)) {
+                                checkedXSymetricEnemyHQ = true;
+                                System.out.println("2");
+                            }
+                        }
+                        if (checkedXYSymetricEnemyHQ && checkedXSymetricEnemyHQ && !checkedYSymetricEnemyHQ) {
+                            enemyHQGuess = Utility.enemyYSymmetric(hqLoc);
+                            Direction move_dir = Bug1.BugGetNext(enemyHQGuess);
+                            makeMove(move_dir);
+                            if (rc.canSenseLocation(enemyHQGuess)) {
+                                checkedYSymetricEnemyHQ = true;
+                                System.out.println("3");
                             }
                         }
                     }
 
-                }
-            }
-            if (rc.getDirtCarrying() == RobotType.LANDSCAPER.dirtLimit) {
-                Direction deposit_dir = dirtScan();
-                if (deposit_dir != null) {
-                    if (rc.canDepositDirt(deposit_dir)) {
-                        if (rc.isReady()) {
-                            rc.depositDirt(deposit_dir);
-                        }
-                    }
-                }
-                if (rc.canDepositDirt(Direction.CENTER)) {
-                    if (rc.isReady()) {
-                        rc.depositDirt(Direction.CENTER);
+                    enemyBuild = enemyBuildingNear();
+                    if (enemyHQ != null && !communicatedEnemyHQ && rc.getTeamSoup() > 20) {
+                        Communications.sendEnemyHqLoc(enemyHQ, 6);
+                        communicatedEnemyHQ = true;
                     }
 
-                }
-            }
-        }
-        if (levee_builder && !myLoc.isAdjacentTo(hqLoc)) {
-            RobotInfo enemyBuild=enemyBuildingNear();
-            if (enemyBuild==null){
-                System.out.println("LEVEE BUILDER" + hqLoc);
-                System.out.println("BUG MOVE DIR start");
-                Direction move_dir = Bug1.BugGetNext(hqLoc);
-                System.out.println("BUG MOVE DIR " + move_dir);
-                makeMove(move_dir);
-            }
-            if (enemyBuild!=null&&!myLoc.isAdjacentTo(enemyBuild.location)) {
-                System.out.println("ATTACK ENEMY BUILDING" + enemyBuild.location);
-                System.out.println("BUG MOVE DIR start");
-                Direction move_dir = Bug1.BugGetNext(enemyBuild.location);
-                System.out.println("BUG MOVE DIR " + move_dir);
-                makeMove(move_dir);
-            }
-            if(enemyBuild!=null&&myLoc.isAdjacentTo(enemyBuild.location)){
+                    if (enemyHQ != null && enemyBuild == null) {
+                        System.out.println("Found Enemy HQ " + enemyHQ);
+                        Direction move_dir = Bug1.BugGetNext(enemyHQ);
+                        System.out.println("BUG MOVE DIR TO ENEMY HQ" + move_dir);
+                        makeMove(move_dir);
+
+                    }
+
+
+                    if (enemyBuild != null && !myLoc.isAdjacentTo(enemyBuild.location)) {
+                        System.out.println("ATTACK ENEMY BUILDING" + enemyBuild.location);
+                        System.out.println("BUG MOVE DIR start");
+                        Direction move_dir = Bug1.BugGetNext(enemyBuild.location);
+                        System.out.println("BUG MOVE DIR " + move_dir);
+                        makeMove(move_dir);
+                    }
+                    if (enemyBuild != null && myLoc.isAdjacentTo(enemyBuild.location)) {
                         if (rc.canDigDirt(Direction.CENTER)) {
                             if (rc.isReady()) {
                                 rc.digDirt(Direction.CENTER);
                             }
                         }
-            }
-            if (rc.getDirtCarrying() == RobotType.LANDSCAPER.dirtLimit) {
-                if(enemyBuild!=null) {
-                    Direction deposit_dir = myLoc.directionTo(enemyBuild.location);
-                    if (deposit_dir != null) {
-                        if (rc.canDepositDirt(deposit_dir)) {
-                            if (rc.isReady()) {
-                                rc.depositDirt(deposit_dir);
+                    }
+                    if (rc.getDirtCarrying() == RobotType.LANDSCAPER.dirtLimit) {
+                        if (enemyBuild != null) {
+                            Direction deposit_dir = myLoc.directionTo(enemyBuild.location);
+                            if (deposit_dir != null) {
+                                if (rc.canDepositDirt(deposit_dir)) {
+                                    if (rc.isReady()) {
+                                        rc.depositDirt(deposit_dir);
+                                    }
+                                }
                             }
                         }
                     }
-                }
-            }
-        }
-        System.out.println("BYTECODE END "+Clock.getBytecodeNum());
 
+
+                }
+
+                System.out.println("BYTECODE END " + Clock.getBytecodeNum());
+            } catch (Exception e) {
+                System.out.println(rc.getType() + " Exception");
+
+                e.printStackTrace();
+            }
+
+        }
     }
 
     public static void makeMove(Direction move_dir) throws GameActionException {
         if (rc.isReady() && rc.canMove(move_dir)) {
             rc.move(move_dir);
+            System.out.println("MOVE DIR IS "+move_dir);
         }
     }
 
@@ -155,22 +272,24 @@ public class Landscaper extends RobotPlayer {
         }
         return false;
     }
-    static RobotInfo enemyBuildingNear(){
-        if (enemyRobots.length>0){
-            for(RobotInfo r:enemyRobots){
-                if (r.type==RobotType.DESIGN_SCHOOL){
+
+    static RobotInfo enemyBuildingNear() {
+        if (enemyRobots.length > 0) {
+            for (RobotInfo r : enemyRobots) {
+                if (r.type == RobotType.DESIGN_SCHOOL) {
                     return r;
                 }
-                if (r.type==RobotType.HQ){
+                if (r.type == RobotType.HQ) {
+                    enemyHQ = r.location;
                     return r;
                 }
-                if (r.type==RobotType.FULFILLMENT_CENTER){
+                if (r.type == RobotType.FULFILLMENT_CENTER) {
                     return r;
                 }
-                if (r.type==RobotType.VAPORATOR){
+                if (r.type == RobotType.VAPORATOR) {
                     return r;
                 }
-                if (r.type==RobotType.NET_GUN){
+                if (r.type == RobotType.NET_GUN) {
                     return r;
                 }
             }
@@ -178,4 +297,22 @@ public class Landscaper extends RobotPlayer {
         return null;
     }
 
+    static void levelGround(Direction direction) throws GameActionException {
+        int my_height = rc.senseElevation(myLoc);
+        int target_height = rc.senseElevation(myLoc.add(direction));
+        if (my_height - 3 > target_height) {
+            if (rc.isReady()) {
+                rc.digDirt(Direction.CENTER);
+                rc.depositDirt(direction);
+            }
+        }
+        if (my_height < target_height - 3) {
+            if (rc.isReady()) {
+                rc.digDirt(direction);
+                rc.depositDirt(Direction.CENTER);
+
+            }
+        }
+
+    }
 }

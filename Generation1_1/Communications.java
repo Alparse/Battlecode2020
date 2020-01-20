@@ -23,7 +23,23 @@ public class Communications extends RobotPlayer {
         message[6] = rc.getID();
         if (rc.canSubmitTransaction(message, bid)) {
             rc.submitTransaction(message, bid);
-            messageQue.add(new Message_Que(0, 3, message[0], message[1], message[2], message[3], message[4], message[5], message[6]));
+            messageQue.add(new Message_Que(0, bid, message[0], message[1], message[2], message[3], message[4], message[5], message[6]));
+        }
+    }
+    public static void sendEnemyHqLoc(MapLocation loc, int bid) throws GameActionException {
+
+        int teamSecret = rc.getRoundNum() * 2 + 3333;
+        int[] message = new int[7];
+        message[0] = teamSecret;
+        message[1] = 2;
+        message[2] = 0;
+        message[3] = loc.x;
+        message[4] = loc.y;
+        message[5] = 0;
+        message[6] = rc.getID();
+        if (rc.canSubmitTransaction(message, bid)) {
+            rc.submitTransaction(message, bid);
+            messageQue.add(new Message_Que(0, bid, message[0], message[1], message[2], message[3], message[4], message[5], message[6]));
         }
     }
 
@@ -41,6 +57,21 @@ public class Communications extends RobotPlayer {
         }
         return null;
     }
+    public static MapLocation getEnemyHqLocFromBlockchain() throws GameActionException {
+        for (int i = 1; i < rc.getRoundNum(); i++) {
+            System.out.println("BLOCKCHAIN");
+            for (Transaction tx : rc.getBlock(i)) {
+                int[] mess = tx.getMessage();
+                if (mess[0] == 3333 + i * 2 && mess[1] == 2) {
+                    System.out.println("GOT MESSAGE ENEMY HQ");
+                    System.out.println(Arrays.toString(mess));
+                    return new MapLocation(mess[3], mess[4]);
+                }
+            }
+        }
+        return null;
+    }
+
 
     public static void sendMinerJob(int robotID, int job, int bid) throws GameActionException {
         // 0= Miner; 1= Construct Design Center; 2== Construct Fulfillment Center ; 3 = Construct Refinery; 4:Construct Netgun
@@ -48,7 +79,7 @@ public class Communications extends RobotPlayer {
         int teamSecret = rc.getRoundNum() * 2 + 3333;
         int[] message = new int[7];
         message[0] = teamSecret;
-        message[1] = 1;
+        message[1] = 10;
         message[2] = robotID;
         message[3] = job;
         message[4] = 0;
@@ -56,8 +87,26 @@ public class Communications extends RobotPlayer {
         message[6] = rc.getID();
         if (rc.canSubmitTransaction(message, bid)) {
             rc.submitTransaction(message, bid);
-            messageQue.add(new Message_Que(0, 3, message[0], message[1], message[2], message[3], message[4], message[5], message[6]));
-            System.out.println("BLOCKCHAIN SEND JOB MESSAGE " + job);
+            messageQue.add(new Message_Que(0, bid, message[0], message[1], message[2], message[3], message[4], message[5], message[6]));
+            System.out.println("BLOCKCHAIN SEND MINER JOB MESSAGE " + job);
+        }
+    }
+    public static void sendLandScaperJob(int robotID, int job, int bid) throws GameActionException {
+        // 0= Miner; 1= Construct Design Center; 2== Construct Fulfillment Center ; 3 = Construct Refinery; 4:Construct Netgun
+
+        int teamSecret = rc.getRoundNum() * 2 + 3333;
+        int[] message = new int[7];
+        message[0] = teamSecret;
+        message[1] = 20;
+        message[2] = robotID;
+        message[3] = job;
+        message[4] = 0;
+        message[5] = 0;
+        message[6] = rc.getID();
+        if (rc.canSubmitTransaction(message, bid)) {
+            rc.submitTransaction(message, bid);
+            messageQue.add(new Message_Que(0, bid, message[0], message[1], message[2], message[3], message[4], message[5], message[6]));
+            System.out.println("BLOCKCHAIN SEND LANDSCAPER JOB MESSAGE " + job);
         }
     }
 
@@ -67,8 +116,26 @@ public class Communications extends RobotPlayer {
         for (int i = 1; i < rc.getRoundNum(); i++) {
             for (Transaction tx : rc.getBlock(i)) {
                 int[] mess = tx.getMessage();
-                if (mess[0] == 3333 + i * 2 && mess[1] == 1) {
-                    System.out.println("GOT JOB MESSAGE");
+                if (mess[0] == 3333 + i * 2 && mess[1] == 10) {
+                    System.out.println("GOT JOB MESSAGE MINER");
+                    System.out.println(Arrays.toString(mess));
+                    if (mess[2] == rc.getID()) {
+                        job = mess[3];
+                        return job;
+                    }
+                }
+            }
+        }
+        return job;
+    }
+    public static int getLandScaperFromBlockchain() throws GameActionException {
+        int job = 0;
+        System.out.println("BLOCKCHAIN GET JOB MESSAGE");
+        for (int i = 1; i < rc.getRoundNum(); i++) {
+            for (Transaction tx : rc.getBlock(i)) {
+                int[] mess = tx.getMessage();
+                if (mess[0] == 3333 + i * 2 && mess[1] == 20) {
+                    System.out.println("GOT JOB MESSAGE LANDSCAPER");
                     System.out.println(Arrays.toString(mess));
                     if (mess[2] == rc.getID()) {
                         job = mess[3];

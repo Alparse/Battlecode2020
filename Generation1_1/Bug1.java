@@ -13,7 +13,8 @@ public class Bug1 extends RobotPlayer {
 
 
     public static Direction BugGetNext(MapLocation goal) throws GameActionException {
-
+        myLoc=rc.getLocation();
+        myHeight=rc.senseElevation(myLoc);
         if (bugPathState == BugPathState.NONE) {
             System.out.println("STATE NONE 1 ");
             v=myLoc.directionTo(goal);
@@ -32,16 +33,12 @@ public class Bug1 extends RobotPlayer {
             lastBuggingDirection=v;
             System.out.println(v);
             MapLocation next_step=myLoc.add(v);
-            int distanceToGoal = myLoc.distanceSquaredTo(goal);
-            int nextStepDistanceToGoal = myLoc.add(v).distanceSquaredTo(goal);
-            if (nextStepDistanceToGoal < distanceToGoal) {
-                bugPathState = BugPathState.NONE;
+            if(isPassable(next_step.directionTo(goal))){
+                bugPathState=BugPathState.NONE;
                 lastBuggingDirection=null;
-                v = myLoc.directionTo(goal);
-                System.out.println(v);
-                System.out.println("LINE Bug next 40");
                 return v;
             }
+
             System.out.println("STATE HUGGING 1 "+bugPathState+v);
             System.out.println("LINE Bug next 44");
             return v;
@@ -67,27 +64,27 @@ public class Bug1 extends RobotPlayer {
 
     public static Direction boundaryFollow(Direction v) throws GameActionException {
 
-
+        System.out.println("START V "+v);
         if (!isPassable(v.rotateLeft())&&isPassable(v)&&bugPathState==BugPathState.HUGLEFT){
 
             System.out.println("1"+v);
             return v;
         }
         if (!isPassable(v.rotateRight())&&isPassable(v)&&bugPathState==BugPathState.HUGRIGHT){
-            System.out.println("2");
+            System.out.println("2"+v);
             return v;
         }
 
         if(isPassable(v.rotateLeft())&&bugPathState==BugPathState.HUGLEFT){
             v=v.rotateLeft();
             bugPathState=BugPathState.HUGLEFT;
-            System.out.println("3");
+            System.out.println("3"+v);
             return v;
         }
         if(isPassable(v.rotateRight())&&bugPathState==BugPathState.HUGRIGHT){
             v=v.rotateRight();
             bugPathState=BugPathState.HUGRIGHT;
-            System.out.println("4");
+            System.out.println("4"+v);
             return v;
         }
 
@@ -95,54 +92,54 @@ public class Bug1 extends RobotPlayer {
             v = v.rotateRight();
             bugPathState = BugPathState.HUGLEFT;
             System.out.println(v);
-            System.out.println("5");
+            System.out.println("5"+v);
             return v;
         }
         if (isPassable(v.rotateLeft()) && (bugPathState == BugPathState.NONE || bugPathState == BugPathState.HUGRIGHT)) {
             v = v.rotateLeft();
             bugPathState = BugPathState.HUGRIGHT;
             System.out.println(v);
-            System.out.println("6");
+            System.out.println("6"+v);
             return v;
         }
         if (isPassable(v.rotateRight().rotateRight()) && (bugPathState == BugPathState.NONE || bugPathState == BugPathState.HUGLEFT)) {
             v = v.rotateRight().rotateRight();
             bugPathState = BugPathState.HUGLEFT;
             System.out.println("TEST "+v);
-            System.out.println("7");
+            System.out.println("7"+v);
             return v;
         }
         if (isPassable(v.rotateLeft().rotateLeft()) && (bugPathState == BugPathState.NONE || bugPathState == BugPathState.HUGRIGHT)) {
             v = v.rotateLeft().rotateLeft();
             bugPathState = BugPathState.HUGRIGHT;
             System.out.println(v);
-            System.out.println("8");
+            System.out.println("8"+v);
             return v;
         }
         if (isPassable((v.rotateRight().rotateRight().rotateRight())) && (bugPathState == BugPathState.NONE || bugPathState == BugPathState.HUGLEFT)) {
             v = v.rotateRight().rotateRight().rotateRight().rotateRight();
             bugPathState = BugPathState.HUGRIGHT;
             System.out.println(v);
-            System.out.println("9");
+            System.out.println("9"+v);
             return v;
         }
         if (isPassable(v.rotateLeft().rotateLeft().rotateLeft()) && (bugPathState == BugPathState.NONE || bugPathState == BugPathState.HUGRIGHT)) {
             v = v.rotateLeft().rotateLeft().rotateLeft();
             bugPathState = BugPathState.HUGLEFT;
             System.out.println(v);
-            System.out.println("10");
+            System.out.println("10"+v);
             return v;
         }
         if (isPassable(v.opposite()) && (bugPathState == BugPathState.NONE || bugPathState == BugPathState.HUGLEFT)) {
             v = v.opposite();
             bugPathState = BugPathState.HUGLEFT;
             System.out.println(v);
-            System.out.println("11");
+            System.out.println("11"+v);
             return v;
         }
         if (trail.size()>4){
             trail.remove(trail.remove(0));
-            System.out.println("11");
+            System.out.println("12");
         }
         System.out.println("13" + v);
         if (trail.size()>0) {

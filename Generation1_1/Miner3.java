@@ -30,7 +30,7 @@ public class Miner3 extends RobotPlayer {
         mother_Nearby();
 
         if (hqLoc == null) {
-            Communications.getHqLocFromBlockchain();
+            hqLoc=Communications.getHqLocFromBlockchain();
             refineryLock = hqLoc;
         }
         if (rc.getRoundNum() > 0) {
@@ -122,6 +122,8 @@ public class Miner3 extends RobotPlayer {
                             break;
 
                         case GOINGSOUP:
+                            myLoc=rc.getLocation();
+                            myHeight=rc.senseElevation(myLoc);
                             //scanForRefinery();
                             System.out.println(minerState.GOINGSOUP);
                             if (myLoc.isAdjacentTo(soupLoc) || myLoc == soupLoc) {
@@ -151,6 +153,8 @@ public class Miner3 extends RobotPlayer {
                             break;
 
                         case RETURNINGSOUP:
+                            myLoc=rc.getLocation();
+                            myHeight=rc.senseElevation(myLoc);
                             System.out.println(minerState.RETURNINGSOUP);
                             if (myLoc.distanceSquaredTo(refineryLock) < 9) {
                                 if (Utility.isWalledOff(refineryLock)) {

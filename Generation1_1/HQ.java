@@ -76,6 +76,9 @@ public class HQ extends RobotPlayer {
                     break;
                 }
         }
+        System.out.println("ENEMY HQ LOCATION XY SYMM "+Utility.enemyXYSymmetric(rc.getLocation()));
+        System.out.println("ENEMY HQ LOCATION Y SYMM "+Utility.enemyYSymmetric(rc.getLocation()));
+        System.out.println("ENEMY HQ LOCATION X SYMM "+Utility.enemyXSymmetric(rc.getLocation()));
         Clock.yield();
     }
 
@@ -93,5 +96,6 @@ public class HQ extends RobotPlayer {
         }
         return my_prioritized_targets;
     }
+
 
 }
