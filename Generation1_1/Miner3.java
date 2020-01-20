@@ -305,8 +305,8 @@ public class Miner3 extends RobotPlayer {
     public static void makeMove(Direction move_dir) throws GameActionException {
         if (rc.isReady() && rc.canMove(move_dir) && !rc.senseFlooding(myLoc.add(move_dir))) {
             trail.add(myLoc.add(move_dir));
-            if (trail.size() >= 4) {
-                trail.remove(0);
+            if (trail.size() >= 6) {
+               trail.remove(0);
             }
             rc.move(move_dir);
         }

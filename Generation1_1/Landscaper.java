@@ -46,6 +46,9 @@ public class Landscaper extends RobotPlayer {
                 Utility.enemyRobotScan();
                 myLoc=rc.getLocation();
                 myHeight=rc.senseElevation(myLoc);
+                if (trail.size()>0) {
+                    trail.remove(trail.remove(0));
+                }
                 if (landScaperJob == 10 || landScaperJob == 99) {
                     System.out.println("STARTING LANDSCAPE 10 ");
                     if (hqLoc == null) {
@@ -227,6 +230,8 @@ public class Landscaper extends RobotPlayer {
         if (rc.isReady() && rc.canMove(move_dir)) {
             rc.move(move_dir);
             System.out.println("MOVE DIR IS "+move_dir);
+            trail.add(myLoc.add(move_dir));
+
         }
     }
 

@@ -4,6 +4,7 @@ import battlecode.common.*;
 import gnu.trove.impl.sync.TSynchronizedShortByteMap;
 
 import java.util.Random;
+import java.util.zip.DeflaterInputStream;
 
 
 public class Bug1 extends RobotPlayer {
@@ -20,7 +21,7 @@ public class Bug1 extends RobotPlayer {
             v=myLoc.directionTo(goal);
             if (!isPassable(v)) {
                 obstacleDirection = v;
-                v = boundaryFollow(v);
+                v = boundaryFollow(v,goal);
                 lastBuggingDirection=v;
             }
             return v;
@@ -29,7 +30,7 @@ public class Bug1 extends RobotPlayer {
             System.out.println("STATE HUGGING 1 "+bugPathState+" Last Dir "+lastBuggingDirection);
             myLoc=rc.getLocation();
 
-            v = boundaryFollow(lastBuggingDirection);
+            v = boundaryFollow(lastBuggingDirection,goal);
             lastBuggingDirection=v;
             System.out.println(v);
             MapLocation next_step=myLoc.add(v);
@@ -57,14 +58,56 @@ public class Bug1 extends RobotPlayer {
         boolean notTooHigh = !(Math.abs(destinationHeight - myHeight) > 3);
         boolean notOccupied=(rc.senseRobotAtLocation(myLoc.add(move_dir))==null);
         boolean notInTrain=!(trail.contains(myLoc.add(move_dir)));
+        System.out.println("NOT TRAIN +"+notInTrain +"direction "+move_dir);
         boolean onTheMap=rc.onTheMap(myLoc.add(move_dir));
         return notFlooded && notTooHigh && notOccupied&&notInTrain&&onTheMap;
 
     }
+    public static boolean isPassableDiagCheck(MapLocation checked_loc, Direction goal_dir) throws GameActionException {
 
-    public static Direction boundaryFollow(Direction v) throws GameActionException {
+        if (!rc.canSenseLocation(checked_loc)){
+            return false;
+        }
+        int destinationHeight = rc.senseElevation(checked_loc.add(goal_dir));
+        boolean notFlooded = !rc.senseFlooding(checked_loc.add(goal_dir));
+        boolean notTooHigh = !(Math.abs(rc.senseElevation(checked_loc) - rc.senseElevation(checked_loc.add(goal_dir))) > 3);
+        boolean notOccupied=(rc.senseRobotAtLocation(checked_loc.add(goal_dir))==null);
+        boolean notInTrain=!(trail.contains(checked_loc.add(goal_dir)));
+
+        boolean onTheMap=rc.onTheMap(checked_loc.add(goal_dir));
+        System.out.println("NOT TRAIN +"+notInTrain);
+        return notFlooded && notTooHigh && notOccupied&&notInTrain&&onTheMap;
+
+    }
+
+    public static Direction boundaryFollow(Direction v,MapLocation goal) throws GameActionException {
 
         System.out.println("START V "+v);
+        if(v==Direction.NORTHEAST||v==Direction.NORTHWEST||v==Direction.SOUTHEAST||v==Direction.SOUTHWEST){
+            if (bugPathState==BugPathState.HUGLEFT){
+                MapLocation check_loc=myLoc.add(v.rotateRight());
+                if (isPassable(myLoc.directionTo(check_loc))){
+                    if (isPassableDiagCheck(check_loc,check_loc.directionTo(goal))){
+                        v=v.rotateRight();
+                        System.out.println("DIAGONAL CHECK PASSED "+v);
+                        return v;
+                    }
+
+                }
+            }
+            if (bugPathState==BugPathState.HUGRIGHT){
+                MapLocation check_loc=myLoc.add(v.rotateLeft());
+                if (isPassable(myLoc.directionTo(check_loc))){
+                    if (isPassableDiagCheck(check_loc,check_loc.directionTo(goal))){
+                        v=v.rotateLeft();
+                        System.out.println("DIAGONAL CHECK PASSED "+v);
+                        return v;
+                    }
+
+                }
+            }
+        }
+
         if (!isPassable(v.rotateLeft())&&isPassable(v)&&bugPathState==BugPathState.HUGLEFT){
 
             System.out.println("1"+v);
@@ -123,8 +166,36 @@ public class Bug1 extends RobotPlayer {
             System.out.println("9"+v);
             return v;
         }
+        if (isPassable((v.rotateRight().rotateRight().rotateRight().rotateRight())) && (bugPathState == BugPathState.NONE || bugPathState == BugPathState.HUGLEFT)) {
+            v = v.rotateRight().rotateRight().rotateRight().rotateRight();
+            bugPathState = BugPathState.HUGRIGHT;
+            System.out.println(v);
+            System.out.println("9"+v);
+            return v;
+        }
         if (isPassable(v.rotateLeft().rotateLeft().rotateLeft()) && (bugPathState == BugPathState.NONE || bugPathState == BugPathState.HUGRIGHT)) {
             v = v.rotateLeft().rotateLeft().rotateLeft();
+            bugPathState = BugPathState.HUGLEFT;
+            System.out.println(v);
+            System.out.println("10"+v);
+            return v;
+        }
+        if (isPassable(v.rotateLeft().rotateLeft().rotateLeft().rotateLeft()) && (bugPathState == BugPathState.NONE || bugPathState == BugPathState.HUGRIGHT)) {
+            v = v.rotateLeft().rotateLeft().rotateLeft();
+            bugPathState = BugPathState.HUGLEFT;
+            System.out.println(v);
+            System.out.println("10"+v);
+            return v;
+        }
+        if (isPassable(v.rotateLeft().rotateLeft().rotateLeft().rotateLeft().rotateLeft()) && (bugPathState == BugPathState.NONE || bugPathState == BugPathState.HUGRIGHT)) {
+            v = v.rotateLeft().rotateLeft().rotateLeft().rotateLeft().rotateLeft();
+            bugPathState = BugPathState.HUGLEFT;
+            System.out.println(v);
+            System.out.println("10"+v);
+            return v;
+        }
+        if (isPassable(v.rotateLeft().rotateLeft().rotateLeft().rotateLeft().rotateLeft().rotateLeft()) && (bugPathState == BugPathState.NONE || bugPathState == BugPathState.HUGRIGHT)) {
+            v = v.rotateLeft().rotateLeft().rotateLeft().rotateLeft().rotateLeft().rotateLeft();
             bugPathState = BugPathState.HUGLEFT;
             System.out.println(v);
             System.out.println("10"+v);
@@ -137,13 +208,14 @@ public class Bug1 extends RobotPlayer {
             System.out.println("11"+v);
             return v;
         }
-        if (trail.size()>4){
-            trail.remove(trail.remove(0));
-            System.out.println("12");
-        }
+        //if (trail.size()>6){
+           //trail.remove(trail.remove(0));
+            //System.out.println("12");
+       // }
         System.out.println("13" + v);
-        if (trail.size()>0) {
-            trail.remove(trail.remove(0));
+        System.out.println("NOT PASSABLE "+v);
+        if(trail.size()>0){
+            trail.remove(0);
         }
         return v;
     }
