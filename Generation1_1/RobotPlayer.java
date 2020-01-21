@@ -29,6 +29,9 @@ public strictfp class RobotPlayer {
     static enum BugPathState {HUGRIGHT, HUGLEFT, NONE}
 
     static BugPathState bugPathState = null;
+    static MapLocation bugEntry=null;
+    static MapLocation lastBugEntry=null;
+    static BugPathState lastBugState=null;
     static Direction lastBuggingDirection = null;
     static ArrayList<MapLocation> trail = null;
     static boolean message_submitted=false;

@@ -3,7 +3,9 @@ package Generation1_1;
 import battlecode.common.*;
 import gnu.trove.impl.sync.TSynchronizedShortByteMap;
 
+import javax.swing.*;
 import java.awt.*;
+import java.sql.Driver;
 
 
 public class Landscaper extends RobotPlayer {
@@ -40,18 +42,20 @@ public class Landscaper extends RobotPlayer {
                 if (landScaperJob == 99) {
                     landScaperJob = Communications.getLandScaperFromBlockchain();
                 }
+                System.out.println("CLOCK START 1 " + Clock.getBytecodesLeft());
                 Communications.checkMessagesQue();
                 Communications.clearMessageQue();
                 friendlyRobots = rc.senseNearbyRobots(-1, myTeam);
                 enemyRobots = rc.senseNearbyRobots(-1, enemyTeam);
                 Utility.friendlyRobotScan();
                 Utility.enemyRobotScan();
-                myLoc=rc.getLocation();
-                myHeight=rc.senseElevation(myLoc);
-                if (trail.size()>0) {
+                myLoc = rc.getLocation();
+                myHeight = rc.senseElevation(myLoc);
+                if (trail.size() > 4) {
                     trail.remove(trail.remove(0));
                 }
                 if (landScaperJob == 10 || landScaperJob == 99) {
+                    System.out.println("CLOCK START 2 " + Clock.getBytecodesLeft());
                     System.out.println("STARTING LANDSCAPE 10 ");
                     if (hqLoc == null) {
                         hqLoc = Communications.getHqLocFromBlockchain();
@@ -65,39 +69,88 @@ public class Landscaper extends RobotPlayer {
                     Direction dig_dirt_dir = null;
                     if (myLoc.isAdjacentTo(hqLoc)) {
                         System.out.println("AT SPOT");
-                        if (enemyLandscaperNear || rc.getRoundNum() > 200) {
-
-                            dig_dirt_dir = hqLoc.directionTo(myLoc);
-                            if (buildingBeingBuried(hqLoc)) {
-                                dig_dirt_dir = myLoc.directionTo(hqLoc);
+                        System.out.println("CLOCK START 3 " + Clock.getBytecodesLeft());
+                        if (hqLoc.directionTo(myLoc) != Direction.NORTH && hqLoc.directionTo(myLoc) != Direction.SOUTH && hqLoc.directionTo(myLoc) != Direction.EAST && hqLoc.directionTo(myLoc) != Direction.WEST) {
+                            if (rc.canMove(myLoc.directionTo(hqLoc.add(Direction.EAST)))) {
+                                rc.move(myLoc.directionTo(hqLoc.add(Direction.EAST)));
                             }
-                            if (rc.canDigDirt(dig_dirt_dir)) {
-                                if (rc.isReady()) {
-                                    rc.digDirt(dig_dirt_dir);
+                            if (rc.canMove(myLoc.directionTo(hqLoc.add(Direction.WEST)))) {
+                                rc.move(myLoc.directionTo(hqLoc.add(Direction.WEST)));
+                            }
+                            if (rc.canMove(myLoc.directionTo(hqLoc.add(Direction.SOUTH)))) {
+                                rc.move(myLoc.directionTo(hqLoc.add(Direction.SOUTH)));
+                            }
+                            if (rc.canMove(myLoc.directionTo(hqLoc.add(Direction.NORTH)))) {
+                                rc.move(myLoc.directionTo(hqLoc.add(Direction.NORTH)));
+                            }
+                        }
+                        if (rc.getDirtCarrying() == 0) {
+                            if ((enemyLandscaperNear || rc.getRoundNum() > 200)) {
+                                Direction dirFromHQ = hqLoc.directionTo(myLoc);
+                                MapLocation targetDigLocation = myLoc.add(hqLoc.directionTo(myLoc));
+                                if (dirFromHQ == Direction.NORTH || dirFromHQ == Direction.NORTHWEST || dirFromHQ == Direction.NORTHEAST) {
+                                    targetDigLocation = new MapLocation(hqLoc.x, hqLoc.y + 2);
                                 }
-                            } else {
-                                for (Direction d : directions) {
-                                    if (rc.canDigDirt(dig_dirt_dir)) {
-                                        if (rc.isReady()) {
-                                            rc.digDirt(dig_dirt_dir);
+                                if (dirFromHQ == Direction.SOUTH || dirFromHQ == Direction.SOUTHWEST || dirFromHQ == Direction.SOUTHEAST) {
+                                    targetDigLocation = new MapLocation(hqLoc.x, hqLoc.y - 2);
+                                }
+                                if (dirFromHQ == Direction.EAST) {
+                                    targetDigLocation = new MapLocation(hqLoc.x + 2, hqLoc.y);
+                                }
+                                if (dirFromHQ == Direction.WEST) {
+                                    targetDigLocation = new MapLocation(hqLoc.x - 2, hqLoc.y);
+                                }
+
+                                dig_dirt_dir = myLoc.directionTo(targetDigLocation);
+                                if (!rc.onTheMap(myLoc.add(dig_dirt_dir))||!rc.canDigDirt(dig_dirt_dir)) {
+                                    for (Direction d : directions) {
+                                        MapLocation testLocation = myLoc.add(d);
+                                        if (rc.onTheMap(testLocation)) {
+                                            if (!hqLoc.isAdjacentTo(testLocation)&&rc.canDigDirt(d)) {
+                                                dig_dirt_dir = d;
+                                                break;
+                                            }
                                         }
                                     }
                                 }
+                                if (buildingBeingBuried(hqLoc)) {
+                                    dig_dirt_dir = myLoc.directionTo(hqLoc);
+                                }
+                                if (rc.canDigDirt(dig_dirt_dir)) {
+                                    if (rc.isReady()) {
+                                        rc.digDirt(dig_dirt_dir);
+                                        System.out.println("DUG DIRT");
+                                    }
+                                } else {
+                                    for (Direction d : directions) {
+                                        if (rc.canDigDirt(dig_dirt_dir)) {
+                                            if (rc.isReady()) {
+                                                rc.digDirt(dig_dirt_dir);
+                                                System.out.println("DUG DIRT");
+                                                break;
+                                            }
+                                        }
+                                    }
 
+                                }
                             }
                         }
-                        if (rc.getDirtCarrying() == RobotType.LANDSCAPER.dirtLimit) {
+                        if (rc.getDirtCarrying() > 0) {
                             Direction deposit_dir = dirtScan();
+                            System.out.println(" DIRT SCAN DISTANCE " + deposit_dir);
                             if (deposit_dir != null) {
                                 if (rc.canDepositDirt(deposit_dir)) {
                                     if (rc.isReady()) {
                                         rc.depositDirt(deposit_dir);
+                                        System.out.println("DEPOSITED DIRT " + deposit_dir);
+                                        break;
                                     }
                                 }
                             }
                             if (rc.canDepositDirt(Direction.CENTER)) {
                                 if (rc.isReady()) {
                                     rc.depositDirt(Direction.CENTER);
+                                    System.out.println("DEPOSITED DIRT CENTER");
                                 }
 
                             }
@@ -196,14 +249,14 @@ public class Landscaper extends RobotPlayer {
                         makeMove(move_dir);
                     }
                     if (enemyBuild != null && myLoc.isAdjacentTo(enemyBuild.location)) {
-                        if (enemyBuild.type== RobotType.HQ) {
+                        if (enemyBuild.type == RobotType.HQ) {
                             if (rc.canDigDirt(Direction.CENTER)) {
                                 if (rc.isReady()) {
                                     rc.digDirt(Direction.CENTER);
                                 }
                             }
                         }
-                        if (enemyBuild.type!= RobotType.HQ) {
+                        if (enemyBuild.type != RobotType.HQ) {
                             for (Direction dir : directions)
                                 if (rc.canDigDirt(dir)) {
                                     if (rc.isReady()) {
@@ -235,6 +288,8 @@ public class Landscaper extends RobotPlayer {
                 }
 
                 System.out.println("BYTECODE END " + Clock.getBytecodeNum());
+                System.out.println("DIRT CARRYING " + rc.getDirtCarrying());
+                Clock.yield();
             } catch (Exception e) {
                 System.out.println(rc.getType() + " Exception");
 
@@ -247,7 +302,7 @@ public class Landscaper extends RobotPlayer {
     public static void makeMove(Direction move_dir) throws GameActionException {
         if (rc.isReady() && rc.canMove(move_dir)) {
             rc.move(move_dir);
-            System.out.println("MOVE DIR IS "+move_dir);
+            System.out.println("MOVE DIR IS " + move_dir);
             trail.add(myLoc.add(move_dir));
 
         }

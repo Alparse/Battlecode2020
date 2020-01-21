@@ -156,6 +156,10 @@ public class Miner3 extends RobotPlayer {
                             myLoc=rc.getLocation();
                             myHeight=rc.senseElevation(myLoc);
                             System.out.println(minerState.RETURNINGSOUP);
+                            if (myLoc.isAdjacentTo(refineryLock)) {
+                                myState = minerState.DEPOSITINGSOUP;
+                                break;
+                            }
                             if (myLoc.distanceSquaredTo(refineryLock) < 9) {
                                 if (Utility.isWalledOff(refineryLock)) {
                                     System.out.println("DESTINATION WALLED OFF");
@@ -176,9 +180,7 @@ public class Miner3 extends RobotPlayer {
                             //}
                             Direction move_dir = Bug1.BugGetNext(refineryLock);
                             makeMove(move_dir);
-                            if (myLoc.isAdjacentTo(refineryLock)) {
-                                myState = minerState.DEPOSITINGSOUP;
-                            }
+
                             break;
 
                         case DEPOSITINGSOUP:
@@ -226,7 +228,7 @@ public class Miner3 extends RobotPlayer {
                     }
 
                 }
-
+                Clock.yield();
                 System.out.println("BYTECODE END " + Clock.getBytecodeNum());
             } catch (Exception e) {
                 System.out.println(rc.getType() + " Exception");
@@ -305,7 +307,8 @@ public class Miner3 extends RobotPlayer {
     public static void makeMove(Direction move_dir) throws GameActionException {
         if (rc.isReady() && rc.canMove(move_dir) && !rc.senseFlooding(myLoc.add(move_dir))) {
             trail.add(myLoc.add(move_dir));
-            if (trail.size() >= 6) {
+            System.out.println("MAKE MOVE "+move_dir);
+            if (trail.size() >= 4) {
                trail.remove(0);
             }
             rc.move(move_dir);
