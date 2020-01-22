@@ -34,7 +34,7 @@ public class DesignSchool extends RobotPlayer {
             for (Direction dir : directions)
                 if (Utility.tryBuild(RobotType.LANDSCAPER, dir)) {
                     RobotInfo built_robot=rc.senseRobotAtLocation(myLoc.add(dir));
-                    Communications.sendLandScaperJob(built_robot.ID,11,3);
+                    Communications.sendLandScaperJob(built_robot.ID,10,3);
                     landscapers_built = landscapers_built+ 1;
                     break;
                 }

@@ -85,7 +85,7 @@ public class Landscaper extends RobotPlayer {
                             }
                         }
                         if (rc.getDirtCarrying() == 0) {
-                            if ((enemyLandscaperNear || rc.getRoundNum() > 200)) {
+                            if ((enemyLandscaperNear || rc.getRoundNum() > 1)) {
                                 Direction dirFromHQ = hqLoc.directionTo(myLoc);
                                 MapLocation targetDigLocation = myLoc.add(hqLoc.directionTo(myLoc));
                                 if (dirFromHQ == Direction.NORTH || dirFromHQ == Direction.NORTHWEST || dirFromHQ == Direction.NORTHEAST) {
