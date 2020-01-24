@@ -40,7 +40,7 @@ public class DesignSchool extends RobotPlayer {
                 }
         }
 
-        if ((landscapers_built >=3&&landscapers_built<13&&rc.getTeamSoup()>=200) && rc.getRoundNum() > 200) {
+        if ((landscapers_built >=3&&landscapers_built<18&&rc.getTeamSoup()>=200) && rc.getRoundNum() > 250) {
             for (Direction dir : directions)
                 if (Utility.tryBuild(RobotType.LANDSCAPER, dir)) {
                     RobotInfo built_robot=rc.senseRobotAtLocation(myLoc.add(dir));

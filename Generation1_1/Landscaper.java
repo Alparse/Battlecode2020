@@ -62,12 +62,49 @@ public class Landscaper extends RobotPlayer {
                     }
 
                     System.out.println("HQ LOC " + hqLoc);
-                    if (largeWall.size() == 0) {
-                        largeWall = Utility.largeWall(hqLoc);
-                        System.out.println(largeWall);
-                    }
+
                     Direction dig_dirt_dir = null;
-                    if (myLoc.isAdjacentTo(hqLoc)) {
+                    if (Utility.isWalledOff(hqLoc)) {
+                        System.out.println("HQ WALLED OFF");
+                        if (Utility.isOnOuterWallPost(hqLoc, myLoc)) {
+                            System.out.println("ON OUTER  WALL");
+                            if (rc.isReady() && rc.getDirtCarrying() == 0) {
+                                for (Direction dir:directions)
+                                    if(Utility.isDigLocation(hqLoc,myLoc.add(dir)))
+                                        rc.digDirt(dir);
+
+                            }
+                            if (rc.getDirtCarrying() > 0&&rc.getRoundNum()>250) {
+                                //Direction deposit_dir = dirtScan();
+                                Direction deposit_dir=null;
+                                int min_height=9999;
+                                int curr_height=9999;
+                                MapLocation check_location=null;
+                                MapLocation min_location=myLoc;
+                                for (Direction dir:leveeDirections){
+                                    check_location=myLoc.add(dir);
+                                    curr_height=rc.senseElevation(check_location);
+                                    if (curr_height<min_height&&Utility.isOnOuterAdvancedWall(hqLoc,myLoc.add(dir))){
+                                        min_location=check_location;
+                                        min_height=curr_height;
+                                        deposit_dir=dir;
+                                    }
+                                }
+                                System.out.println(" DIRT SCAN DISTANCE " + deposit_dir);
+                                if (deposit_dir != null) {
+                                    if (rc.canDepositDirt(deposit_dir)) {
+                                        if (rc.isReady()) {
+                                            rc.depositDirt(deposit_dir);
+                                            System.out.println("DEPOSITED DIRT " + deposit_dir);
+                                            break;
+                                        }
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+                    if (Utility.isOnOInnerWall(hqLoc, myLoc)) {
                         System.out.println("AT SPOT");
                         System.out.println("CLOCK START 3 " + Clock.getBytecodesLeft());
                         if (hqLoc.directionTo(myLoc) != Direction.NORTH && hqLoc.directionTo(myLoc) != Direction.SOUTH && hqLoc.directionTo(myLoc) != Direction.EAST && hqLoc.directionTo(myLoc) != Direction.WEST) {
@@ -102,11 +139,11 @@ public class Landscaper extends RobotPlayer {
                                 }
 
                                 dig_dirt_dir = myLoc.directionTo(targetDigLocation);
-                                if (!rc.onTheMap(myLoc.add(dig_dirt_dir))||!rc.canDigDirt(dig_dirt_dir)) {
+                                if (!rc.onTheMap(myLoc.add(dig_dirt_dir)) || !rc.canDigDirt(dig_dirt_dir)) {
                                     for (Direction d : directions) {
                                         MapLocation testLocation = myLoc.add(d);
                                         if (rc.onTheMap(testLocation)) {
-                                            if (!hqLoc.isAdjacentTo(testLocation)&&rc.canDigDirt(d)) {
+                                            if (!hqLoc.isAdjacentTo(testLocation) && rc.canDigDirt(d)) {
                                                 dig_dirt_dir = d;
                                                 break;
                                             }
@@ -135,7 +172,7 @@ public class Landscaper extends RobotPlayer {
                                 }
                             }
                         }
-                        if (rc.getDirtCarrying() > 0) {
+                        if (rc.getDirtCarrying() > 0&&(rc.getRoundNum()>250||buildingBeingBuried(hqLoc))) {
                             Direction deposit_dir = dirtScan();
                             System.out.println(" DIRT SCAN DISTANCE " + deposit_dir);
                             if (deposit_dir != null) {
@@ -156,7 +193,7 @@ public class Landscaper extends RobotPlayer {
                             }
                         }
                     }
-                    if (levee_builder && !myLoc.isAdjacentTo(hqLoc)) {
+                    if ((!myLoc.isAdjacentTo(hqLoc) && !Utility.isWalledOff(hqLoc)) || (Utility.isWalledOff(hqLoc)) && !Utility.isOnOuterWallPost(hqLoc, myLoc)) {
                         RobotInfo enemyBuild = enemyBuildingNear();
                         if (enemyBuild == null) {
                             System.out.println("LEVEE BUILDER" + hqLoc);
@@ -310,19 +347,28 @@ public class Landscaper extends RobotPlayer {
 
 
     static Direction dirtScan() throws GameActionException {
+        System.out.println("DIRT SCAN START");
+        MapLocation min_Location = null;
+        MapLocation new_Location = null;
+        int min_height = 9999;
+        for (Direction dir : leveeDirections) {
 
-        myLoc = rc.getLocation();
-        for (Direction dir : directions)
-            if (!myLoc.add(dir).equals(hqLoc) && myLoc.add(dir).isAdjacentTo(hqLoc)) {
-                int height_dif = rc.senseElevation(myLoc) - rc.senseElevation(myLoc.add(dir));
-                System.out.println("HQ LOC " + hqLoc);
-                if (height_dif > RobotType.LANDSCAPER.dirtLimit) {
-                    System.out.println("DUMP LOCATION " + dir);
-                    return dir;
+
+            int new_height = 9999;
+            if (Utility.isOnOInnerWall(hqLoc, myLoc.add(dir))) {  //(!myLoc.add(dir).equals(hqLoc) && myLoc.add(dir).isAdjacentTo(hqLoc)) {
+                System.out.println("Sensing " + dir);
+                if (rc.canSenseLocation(myLoc.add(dir))) {
+                    new_Location = myLoc.add(dir);
+                    new_height = rc.senseElevation(new_Location);
+                    if (new_height < min_height) {
+                        min_height = new_height;
+                        min_Location = new_Location;
+                    }
                 }
             }
+        }
+        return myLoc.directionTo(min_Location);
 
-        return null;
     }
 
     static boolean mother_Nearby() {

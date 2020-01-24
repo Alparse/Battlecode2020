@@ -3,6 +3,7 @@ package Generation1_1;
 import battlecode.common.*;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 
 public class Utility extends RobotPlayer {
@@ -100,7 +101,6 @@ public class Utility extends RobotPlayer {
     }
 
 
-
     public static boolean isNotWall(MapLocation searchLocation) throws GameActionException {
 
         if (!rc.canSenseLocation(searchLocation)) {
@@ -153,6 +153,7 @@ public class Utility extends RobotPlayer {
         largeWall.add(search_location16);
         return largeWall;
     }
+
     static boolean isWalledOffLarge(MapLocation targetLocation) throws GameActionException {
 
         MapLocation search_location1 = new MapLocation(targetLocation.x + -2, targetLocation.y + 2);
@@ -173,27 +174,151 @@ public class Utility extends RobotPlayer {
         MapLocation search_location16 = new MapLocation(targetLocation.x - 1, targetLocation.y + 2);
 
         if (isNotWall(search_location1) || isNotWall(search_location2) || isNotWall(search_location3) || isNotWall(search_location4) || isNotWall(search_location5) || isNotWall(search_location6) || isNotWall(search_location7) ||
-                isNotWall(search_location8)||isNotWall(search_location9)||isNotWall(search_location10)||isNotWall(search_location11)||isNotWall(search_location12)||isNotWall(search_location13)||isNotWall(search_location14)||isNotWall(search_location15)||isNotWall(search_location16)) {
+                isNotWall(search_location8) || isNotWall(search_location9) || isNotWall(search_location10) || isNotWall(search_location11) || isNotWall(search_location12) || isNotWall(search_location13) || isNotWall(search_location14) || isNotWall(search_location15) || isNotWall(search_location16)) {
             return false;
         }
         return true;
     }
-    static MapLocation enemyXYSymmetric(MapLocation hqLoc){
-        int dx=rc.getMapWidth()-hqLoc.x-1;
-        int dy=rc.getMapHeight()-hqLoc.y-1;
-        return( new MapLocation (dx,dy));
+
+    static boolean isOnOuterWall(MapLocation targetLocation, MapLocation object) {
+        MapLocation search_location1 = new MapLocation(targetLocation.x + -2, targetLocation.y + 2);
+        MapLocation search_location2 = new MapLocation(targetLocation.x + -2, targetLocation.y + 1);
+        MapLocation search_location3 = new MapLocation(targetLocation.x + -2, targetLocation.y + 0);
+        MapLocation search_location4 = new MapLocation(targetLocation.x + -2, targetLocation.y - 1);
+        MapLocation search_location5 = new MapLocation(targetLocation.x + -2, targetLocation.y - 2);
+        MapLocation search_location6 = new MapLocation(targetLocation.x + -1, targetLocation.y - 2);
+        MapLocation search_location7 = new MapLocation(targetLocation.x + 0, targetLocation.y - 2);
+        MapLocation search_location8 = new MapLocation(targetLocation.x + 1, targetLocation.y - 2);
+        MapLocation search_location9 = new MapLocation(targetLocation.x + 2, targetLocation.y - 2);
+        MapLocation search_location10 = new MapLocation(targetLocation.x + 2, targetLocation.y - 1);
+        MapLocation search_location11 = new MapLocation(targetLocation.x + 2, targetLocation.y + 0);
+        MapLocation search_location12 = new MapLocation(targetLocation.x + 2, targetLocation.y + 1);
+        MapLocation search_location13 = new MapLocation(targetLocation.x + 2, targetLocation.y + 2);
+        MapLocation search_location14 = new MapLocation(targetLocation.x + 1, targetLocation.y + 2);
+        MapLocation search_location15 = new MapLocation(targetLocation.x + 0, targetLocation.y + 2);
+        MapLocation search_location16 = new MapLocation(targetLocation.x - 1, targetLocation.y + 2);
+        if (object.equals(search_location1) || object.equals(search_location2) || object.equals(search_location3) || object.equals(search_location4) || object.equals(search_location5) || object.equals(search_location6) || object.equals(search_location7) || object.equals(search_location8) || object.equals(search_location9) || object.equals(search_location10) || object.equals(search_location11) || object.equals(search_location12) || object.equals(search_location13) || object.equals(search_location14) || object.equals(search_location15) || object.equals(search_location16)) {
+            return true;
+        }
+        return false;
 
     }
-    static MapLocation enemyYSymmetric(MapLocation hqLoc){
-        int dx=hqLoc.x;
-        int dy=rc.getMapHeight()-hqLoc.y-1;
-        return( new MapLocation (dx,dy));
+
+    static boolean isOnOuterWallPost(MapLocation targetLocation, MapLocation object) {
+        MapLocation search_location1 = new MapLocation(targetLocation.x + -2, targetLocation.y + 2);
+        MapLocation search_location2 = new MapLocation(targetLocation.x + -1, targetLocation.y + 2);
+        MapLocation search_location3 = new MapLocation(targetLocation.x + 2, targetLocation.y + 2);
+        MapLocation search_location4 = new MapLocation(targetLocation.x + 2, targetLocation.y + 1);
+        MapLocation search_location5 = new MapLocation(targetLocation.x + -2, targetLocation.y - 1);
+        MapLocation search_location6 = new MapLocation(targetLocation.x + -2, targetLocation.y - 2);
+        MapLocation search_location7 = new MapLocation(targetLocation.x + 1, targetLocation.y - 2);
+        MapLocation search_location8 = new MapLocation(targetLocation.x + 2, targetLocation.y - 2);
+        if (object.equals(search_location1) || object.equals(search_location2) || object.equals(search_location3) || object.equals(search_location4) || object.equals(search_location5) || object.equals(search_location6) || object.equals(search_location7) || object.equals(search_location8)) {
+            return true;
+        }
+        return false;
 
     }
-    static MapLocation enemyXSymmetric(MapLocation hqLoc){
-        int dx=rc.getMapWidth()-hqLoc.x-1;
-        int dy=hqLoc.y;
-        return( new MapLocation (dx,dy));
+
+    static boolean isDigLocation(MapLocation targetLocation, MapLocation object) {
+        MapLocation search_location1 = new MapLocation(targetLocation.x + -3, targetLocation.y + 3);
+        MapLocation search_location2 = new MapLocation(targetLocation.x + -3, targetLocation.y + -3);
+        MapLocation search_location3 = new MapLocation(targetLocation.x + -2, targetLocation.y + 0);
+        MapLocation search_location4 = new MapLocation(targetLocation.x + 0, targetLocation.y + 2);
+        MapLocation search_location5 = new MapLocation(targetLocation.x + 0, targetLocation.y - 2);
+        MapLocation search_location6 = new MapLocation(targetLocation.x + 2, targetLocation.y + 0);
+        MapLocation search_location7 = new MapLocation(targetLocation.x + 3, targetLocation.y + 3);
+        MapLocation search_location8 = new MapLocation(targetLocation.x + 3, targetLocation.y + -3);
+        if (object.equals(search_location1) || object.equals(search_location2) || object.equals(search_location3) || object.equals(search_location4) || object.equals(search_location5) || object.equals(search_location6) || object.equals(search_location7) || object.equals(search_location8)) {
+            return true;
+        }
+        return false;
+
+    }
+
+    static boolean isKeepBuildLocation(MapLocation targetLocation, MapLocation object) {
+        MapLocation search_location1 = new MapLocation(targetLocation.x + 1, targetLocation.y + 2);
+        MapLocation search_location2 = new MapLocation(targetLocation.x + 2, targetLocation.y + -1);
+        MapLocation search_location3 = new MapLocation(targetLocation.x + -1, targetLocation.y - 2);
+        MapLocation search_location4 = new MapLocation(targetLocation.x + -2, targetLocation.y + 1);
+        if (object.equals(search_location1) || object.equals(search_location2) || object.equals(search_location3) || object.equals(search_location4)) {
+            return true;
+        }
+        return false;
+
+    }
+
+
+    static boolean isOnOInnerWall(MapLocation targetLocation, MapLocation object) {
+        MapLocation search_location1 = new MapLocation(targetLocation.x + -1, targetLocation.y + 1);
+        MapLocation search_location2 = new MapLocation(targetLocation.x + -1, targetLocation.y + 0);
+        MapLocation search_location3 = new MapLocation(targetLocation.x + -1, targetLocation.y - 1);
+        MapLocation search_location4 = new MapLocation(targetLocation.x + 0, targetLocation.y + 1);
+        MapLocation search_location5 = new MapLocation(targetLocation.x + 0, targetLocation.y - 1);
+        MapLocation search_location6 = new MapLocation(targetLocation.x + 1, targetLocation.y + 1);
+        MapLocation search_location7 = new MapLocation(targetLocation.x + 1, targetLocation.y + 0);
+        MapLocation search_location8 = new MapLocation(targetLocation.x + 1, targetLocation.y - 1);
+        if (object.equals(search_location1) || object.equals(search_location2) || object.equals(search_location3) || object.equals(search_location4) || object.equals(search_location5) || object.equals(search_location6) || object.equals(search_location7) || object.equals(search_location8)) {
+            return true;
+        }
+        return false;
+
+    }
+
+    static boolean isOnOuterAdvancedWall(MapLocation targetLocation, MapLocation object) {
+        MapLocation search_location1 = new MapLocation(targetLocation.x + -3, targetLocation.y + 2);
+        MapLocation search_location2 = new MapLocation(targetLocation.x + -3, targetLocation.y + 1);
+        MapLocation search_location3 = new MapLocation(targetLocation.x + -3, targetLocation.y - 0);
+        MapLocation search_location4 = new MapLocation(targetLocation.x + -3, targetLocation.y + -1);
+        MapLocation search_location5 = new MapLocation(targetLocation.x + -2, targetLocation.y + 2);
+        MapLocation search_location6 = new MapLocation(targetLocation.x - 2, targetLocation.y - 1);
+        MapLocation search_location7 = new MapLocation(targetLocation.x - 2, targetLocation.y - 2);
+        MapLocation search_location8 = new MapLocation(targetLocation.x - 2, targetLocation.y - 3);
+
+        MapLocation search_location9 = new MapLocation(targetLocation.x - 1, targetLocation.y + 3);
+        MapLocation search_location10 = new MapLocation(targetLocation.x + -1, targetLocation.y + 2);
+        MapLocation search_location11 = new MapLocation(targetLocation.x + -1, targetLocation.y - 3);
+        MapLocation search_location12 = new MapLocation(targetLocation.x + 0, targetLocation.y + 3);
+        MapLocation search_location13 = new MapLocation(targetLocation.x + 0, targetLocation.y - 3);
+        MapLocation search_location14 = new MapLocation(targetLocation.x + 1, targetLocation.y + 3);
+        MapLocation search_location15 = new MapLocation(targetLocation.x + 1, targetLocation.y - 2);
+        MapLocation search_location16 = new MapLocation(targetLocation.x + 1, targetLocation.y - 3);
+
+        MapLocation search_location17 = new MapLocation(targetLocation.x + 2, targetLocation.y + 3);
+        MapLocation search_location18 = new MapLocation(targetLocation.x + 2, targetLocation.y + 2);
+        MapLocation search_location19 = new MapLocation(targetLocation.x + 2, targetLocation.y + 1);
+        MapLocation search_location20 = new MapLocation(targetLocation.x + 2, targetLocation.y + -2);
+        MapLocation search_location21 = new MapLocation(targetLocation.x + 3, targetLocation.y + 1);
+        MapLocation search_location22 = new MapLocation(targetLocation.x + 3, targetLocation.y + 0);
+        MapLocation search_location23 = new MapLocation(targetLocation.x + 3, targetLocation.y + -1);
+        MapLocation search_location24 = new MapLocation(targetLocation.x + 3, targetLocation.y - 2);
+
+        if (object.equals(search_location1) || object.equals(search_location2) || object.equals(search_location3) || object.equals(search_location4) || object.equals(search_location5) || object.equals(search_location6) || object.equals(search_location7) || object.equals(search_location8) || object.equals(search_location9) || object.equals(search_location10) || object.equals(search_location11) || object.equals(search_location12) || object.equals(search_location13) || object.equals(search_location14) || object.equals(search_location15) || object.equals(search_location16) || object.equals(search_location17) || object.equals(search_location18) || object.equals(search_location19) || object.equals(search_location20) || object.equals(search_location21) || object.equals(search_location22) || object.equals(search_location23) || object.equals(search_location24)) {
+            return true;
+        }
+        return false;
+
+    }
+
+
+    static MapLocation enemyXYSymmetric(MapLocation hqLoc) {
+        int dx = rc.getMapWidth() - hqLoc.x - 1;
+        int dy = rc.getMapHeight() - hqLoc.y - 1;
+        return (new MapLocation(dx, dy));
+
+    }
+
+    static MapLocation enemyYSymmetric(MapLocation hqLoc) {
+        int dx = hqLoc.x;
+        int dy = rc.getMapHeight() - hqLoc.y - 1;
+        return (new MapLocation(dx, dy));
+
+    }
+
+    static MapLocation enemyXSymmetric(MapLocation hqLoc) {
+        int dx = rc.getMapWidth() - hqLoc.x - 1;
+        int dy = hqLoc.y;
+        return (new MapLocation(dx, dy));
 
     }
 }

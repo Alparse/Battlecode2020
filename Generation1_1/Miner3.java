@@ -17,6 +17,8 @@ public class Miner3 extends RobotPlayer {
     static boolean returningSoup = false;
     static boolean refiningSoup = false;
     static boolean designCenterBuilt = false;
+    static boolean fulfillmentCenterBuilt=false;
+    static int vaporatorsBuilt=0;
     static MapLocation refineryLock = null;
     static int minerJob = 0;
     static MapLocation lastSoupLoc = null;
@@ -30,7 +32,7 @@ public class Miner3 extends RobotPlayer {
         mother_Nearby();
 
         if (hqLoc == null) {
-            hqLoc=Communications.getHqLocFromBlockchain();
+            hqLoc = Communications.getHqLocFromBlockchain();
             refineryLock = hqLoc;
         }
         if (rc.getRoundNum() > 0) {
@@ -50,34 +52,67 @@ public class Miner3 extends RobotPlayer {
 
 
                 if (minerJob == 1) {
-                    System.out.println("I AM A CONSTRUCTOR "+(myLoc.distanceSquaredTo(hqLoc)));
-                    if (!designCenterNear && !designCenterBuilt && myLoc.distanceSquaredTo(hqLoc) > 8&&myLoc.distanceSquaredTo(hqLoc)<=10) {
+                    System.out.println("I AM A CONSTRUCTOR " + (myLoc.distanceSquaredTo(hqLoc)));
+                    if (!designCenterNear && !designCenterBuilt && myLoc.distanceSquaredTo(hqLoc) > 8 && myLoc.distanceSquaredTo(hqLoc) <= 10) {
                         System.out.println("TESTER TRUE");
-                        for (Direction dir : directions)
-                            if (rc.isReady() && Utility.tryBuild(RobotType.DESIGN_SCHOOL, dir)) {
-                                hqLoc = myLoc.add(dir);
-                                designCenterNear = true;
-                                designCenterBuilt = true;
-                                minerJob = 0;
-                                break;
+                        for (Direction dir : directions) {
+                            if (Math.abs(myLoc.add(dir).x-hqLoc.x)>=4||(Math.abs(myLoc.add(dir).y-hqLoc.y)>=4)) {
+                                if (rc.isReady() && Utility.tryBuild(RobotType.DESIGN_SCHOOL, dir)) {
+                                    //hqLoc = myLoc.add(dir);
+                                    designCenterNear = true;
+                                    designCenterBuilt = true;
+                                    //minerJob = 0;
+                                    break;
+                                }
                             }
+                        }
+                    }
+
+                    if (designCenterBuilt &&!fulfillmentCenterBuilt&&vaporatorsBuilt==0) {
+                        System.out.println("TESTER TRUE fulfillment cent build "+hqLoc);
+                        for (Direction dir : directions) {
+                            if (Utility.isKeepBuildLocation(hqLoc,myLoc.add(dir))) {
+                                if (rc.isReady() && Utility.tryBuild(RobotType.FULFILLMENT_CENTER, dir)) {
+                                    designCenterNear = true;
+                                    fulfillmentCenterBuilt = true;
+                                    vaporatorsBuilt=vaporatorsBuilt+1;
+
+                                    minerJob = 1;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (designCenterBuilt &&fulfillmentCenterBuilt) {
+                        System.out.println("TESTER TRUE fulfillment cent build "+hqLoc);
+                        for (Direction dir : directions) {
+                            if (Utility.isKeepBuildLocation(hqLoc,myLoc.add(dir))) {
+                                if (rc.isReady() && Utility.tryBuild(RobotType.VAPORATOR, dir)) {
+                                    designCenterNear = true;
+                                    fulfillmentCenterBuilt = true;
+
+                                    minerJob = 1;
+                                    break;
+                                }
+                            }
+                        }
                     }
 
                     if (myLoc.distanceSquaredTo(hqLoc) > 13) {
-                        explore_Dir=myLoc.directionTo(hqLoc);
+                        explore_Dir = myLoc.directionTo(hqLoc);
                     }
-                    if (myLoc.distanceSquaredTo(hqLoc)<=13&&myLoc.distanceSquaredTo(hqLoc)>8){
-                        explore_Dir=myLoc.directionTo(hqLoc).rotateRight().rotateRight();
+                    if (myLoc.distanceSquaredTo(hqLoc) <= 13 && myLoc.distanceSquaredTo(hqLoc) > 8) {
+                        explore_Dir = myLoc.directionTo(hqLoc).rotateRight().rotateRight();
                     }
-                    if (myLoc.distanceSquaredTo(hqLoc)<=8){
+                    if (myLoc.distanceSquaredTo(hqLoc) <= 8) {
                         System.out.println("<8");
-                        explore_Dir=myLoc.directionTo(hqLoc).opposite();
+                        explore_Dir = myLoc.directionTo(hqLoc).opposite();
                     }
-                    if(rc.isReady()&&rc.canMove(explore_Dir)){
+                    if (rc.isReady() && rc.canMove(explore_Dir)) {
                         makeMove(explore_Dir);
                     }
-                    if(rc.isReady()&&!rc.canMove(explore_Dir)){
-                        while(!rc.canMove(explore_Dir)) {
+                    if (rc.isReady() && !rc.canMove(explore_Dir)) {
+                        while (!rc.canMove(explore_Dir)) {
                             explore_Dir = explore_Dir.rotateRight();
                         }
                         makeMove(explore_Dir);
@@ -122,8 +157,8 @@ public class Miner3 extends RobotPlayer {
                             break;
 
                         case GOINGSOUP:
-                            myLoc=rc.getLocation();
-                            myHeight=rc.senseElevation(myLoc);
+                            myLoc = rc.getLocation();
+                            myHeight = rc.senseElevation(myLoc);
                             //scanForRefinery();
                             System.out.println(minerState.GOINGSOUP);
                             if (myLoc.isAdjacentTo(soupLoc) || myLoc == soupLoc) {
@@ -153,8 +188,8 @@ public class Miner3 extends RobotPlayer {
                             break;
 
                         case RETURNINGSOUP:
-                            myLoc=rc.getLocation();
-                            myHeight=rc.senseElevation(myLoc);
+                            myLoc = rc.getLocation();
+                            myHeight = rc.senseElevation(myLoc);
                             System.out.println(minerState.RETURNINGSOUP);
                             if (myLoc.isAdjacentTo(refineryLock)) {
                                 myState = minerState.DEPOSITINGSOUP;
@@ -176,7 +211,7 @@ public class Miner3 extends RobotPlayer {
                                 }
                             }
                             //if(myLoc.distanceSquaredTo(refineryLock)>140&&!refineryNear){
-                           // myState=minerState.BUILDINGREFINERY;
+                            // myState=minerState.BUILDINGREFINERY;
                             //}
                             Direction move_dir = Bug1.BugGetNext(refineryLock);
                             makeMove(move_dir);
@@ -195,11 +230,11 @@ public class Miner3 extends RobotPlayer {
 
                         case BUILDINGREFINERY:
                             System.out.println(minerState.BUILDINGREFINERY);
-                            if(refineryNear){
-                                for (RobotInfo r:friendlyRobots){
-                                    if(r.type==RobotType.REFINERY){
-                                        refineryLock=r.location;
-                                        refineryNear=true;
+                            if (refineryNear) {
+                                for (RobotInfo r : friendlyRobots) {
+                                    if (r.type == RobotType.REFINERY) {
+                                        refineryLock = r.location;
+                                        refineryNear = true;
                                     }
                                 }
                                 if (rc.getSoupCarrying() > 0) {
@@ -211,13 +246,15 @@ public class Miner3 extends RobotPlayer {
                                 break;
                             }
                             for (Direction dir : directions) {
-                                if (rc.isReady() && Utility.tryBuild(RobotType.REFINERY, dir)) {
-                                    refineryLock = myLoc.add(dir);
-                                    refineryNear = true;
-                                    if (rc.getSoupCarrying() > 0) {
-                                        myState = minerState.DEPOSITINGSOUP;
+                                if (Math.abs(myLoc.add(dir).x-hqLoc.x)>=4||(Math.abs(myLoc.add(dir).y-hqLoc.y)>=4)) {
+                                    if (rc.isReady() && Utility.tryBuild(RobotType.REFINERY, dir)) {
+                                        refineryLock = myLoc.add(dir);
+                                        refineryNear = true;
+                                        if (rc.getSoupCarrying() > 0) {
+                                            myState = minerState.DEPOSITINGSOUP;
+                                        }
+                                        break;
                                     }
-                                    break;
                                 }
                             }
                             if (rc.getSoupCarrying() == 0) {
@@ -291,14 +328,14 @@ public class Miner3 extends RobotPlayer {
         }
     }
 
-    public static void scanForRefinery(){
-        if (friendlyRobots.length>0){
-        for (RobotInfo r:friendlyRobots){
-            if (r.type==RobotType.REFINERY) {
-                if ((r.location.distanceSquaredTo(myLoc)) < refineryLock.distanceSquaredTo(myLoc)) {
-                    refineryLock = r.location;
+    public static void scanForRefinery() {
+        if (friendlyRobots.length > 0) {
+            for (RobotInfo r : friendlyRobots) {
+                if (r.type == RobotType.REFINERY) {
+                    if ((r.location.distanceSquaredTo(myLoc)) < refineryLock.distanceSquaredTo(myLoc)) {
+                        refineryLock = r.location;
+                    }
                 }
-            }
             }
         }
     }
@@ -307,9 +344,9 @@ public class Miner3 extends RobotPlayer {
     public static void makeMove(Direction move_dir) throws GameActionException {
         if (rc.isReady() && rc.canMove(move_dir) && !rc.senseFlooding(myLoc.add(move_dir))) {
             trail.add(myLoc.add(move_dir));
-            System.out.println("MAKE MOVE "+move_dir);
+            System.out.println("MAKE MOVE " + move_dir);
             if (trail.size() >= 4) {
-               trail.remove(0);
+                trail.remove(0);
             }
             rc.move(move_dir);
         }
