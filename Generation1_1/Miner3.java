@@ -196,7 +196,7 @@ public class Miner3 extends RobotPlayer {
                                 break;
                             }
                             if (myLoc.distanceSquaredTo(refineryLock) < 9) {
-                                if (Utility.isWalledOff(refineryLock)) {
+                                if (Utility.isWalledOff(refineryLock)&&rc.getRoundNum()>100) {
                                     System.out.println("DESTINATION WALLED OFF");
                                     myState = minerState.BUILDINGREFINERY;
                                     RobotInfo currentRefinery = rc.senseRobotAtLocation(refineryLock);

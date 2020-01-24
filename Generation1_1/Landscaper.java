@@ -368,7 +368,7 @@ public class Landscaper extends RobotPlayer {
             }
         }
         return myLoc.directionTo(min_Location);
-
+//test
     }
 
     static boolean mother_Nearby() {
