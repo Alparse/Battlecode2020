@@ -6,6 +6,7 @@ import gnu.trove.impl.sync.TSynchronizedShortByteMap;
 import javax.swing.*;
 import java.awt.*;
 import java.sql.Driver;
+import java.util.ArrayList;
 
 
 public class Landscaper extends RobotPlayer {
@@ -21,6 +22,8 @@ public class Landscaper extends RobotPlayer {
     static MapLocation enemyHQGuess = null;
     static MapLocation enemyHQ = null;
     static boolean communicatedEnemyHQ = false;
+    static ArrayList<MapLocation> digLocations = null;
+    static boolean started_terraforming = false;
 
 
     static void runLandscaper() throws GameActionException {
@@ -35,6 +38,7 @@ public class Landscaper extends RobotPlayer {
         System.out.println("BYTECODE START " + Clock.getBytecodeNum());
         myLoc = rc.getLocation();
         myHeight = rc.senseElevation(myLoc);
+        digLocations = Utility.digLocations(hqLoc);
         mother_Nearby();
 
         while (true) {
@@ -69,25 +73,25 @@ public class Landscaper extends RobotPlayer {
                         if (Utility.isOnOuterWallPost(hqLoc, myLoc)) {
                             System.out.println("ON OUTER  WALL");
                             if (rc.isReady() && rc.getDirtCarrying() == 0) {
-                                for (Direction dir:directions)
-                                    if(Utility.isDigLocation(hqLoc,myLoc.add(dir)))
+                                for (Direction dir : directions)
+                                    if (Utility.isDigLocation(hqLoc, myLoc.add(dir)))
                                         rc.digDirt(dir);
 
                             }
-                            if (rc.getDirtCarrying() > 0&&rc.getRoundNum()>250) {
+                            if (rc.getDirtCarrying() > 0 && rc.getRoundNum() > 250) {
                                 //Direction deposit_dir = dirtScan();
-                                Direction deposit_dir=null;
-                                int min_height=9999;
-                                int curr_height=9999;
-                                MapLocation check_location=null;
-                                MapLocation min_location=myLoc;
-                                for (Direction dir:leveeDirections){
-                                    check_location=myLoc.add(dir);
-                                    curr_height=rc.senseElevation(check_location);
-                                    if (curr_height<min_height&&Utility.isOnOuterAdvancedWall(hqLoc,myLoc.add(dir))){
-                                        min_location=check_location;
-                                        min_height=curr_height;
-                                        deposit_dir=dir;
+                                Direction deposit_dir = null;
+                                int min_height = 9999;
+                                int curr_height = 9999;
+                                MapLocation check_location = null;
+                                MapLocation min_location = myLoc;
+                                for (Direction dir : leveeDirections) {
+                                    check_location = myLoc.add(dir);
+                                    curr_height = rc.senseElevation(check_location);
+                                    if (curr_height < min_height && Utility.isOnOuterAdvancedWall(hqLoc, myLoc.add(dir))) {
+                                        min_location = check_location;
+                                        min_height = curr_height;
+                                        deposit_dir = dir;
                                     }
                                 }
                                 System.out.println(" DIRT SCAN DISTANCE " + deposit_dir);
@@ -172,7 +176,7 @@ public class Landscaper extends RobotPlayer {
                                 }
                             }
                         }
-                        if (rc.getDirtCarrying() > 0&&(rc.getRoundNum()>250||buildingBeingBuried(hqLoc))) {
+                        if (rc.getDirtCarrying() > 0 && (rc.getRoundNum() > 250 || buildingBeingBuried(hqLoc))) {
                             Direction deposit_dir = dirtScan();
                             System.out.println(" DIRT SCAN DISTANCE " + deposit_dir);
                             if (deposit_dir != null) {
@@ -323,6 +327,21 @@ public class Landscaper extends RobotPlayer {
 
 
                 }
+                if (landScaperJob == 12) {
+                    if (!started_terraforming) {
+                        Direction move_dir = Bug1.BugGetNext(hqLoc);
+                        makeMove(move_dir);
+                    }
+                    if (myLoc.isAdjacentTo(hqLoc)) {
+                        started_terraforming = true;
+
+                    }
+
+                    MapLocation scapeLoc = checkGround(hqLoc, myLoc);
+                    System.out.println("SCAPE LOC " + scapeLoc);
+                    terraFormGround(scapeLoc);
+
+                }
 
                 System.out.println("BYTECODE END " + Clock.getBytecodeNum());
                 System.out.println("DIRT CARRYING " + rc.getDirtCarrying());
@@ -334,6 +353,7 @@ public class Landscaper extends RobotPlayer {
             }
 
         }
+
     }
 
     public static void makeMove(Direction move_dir) throws GameActionException {
@@ -439,4 +459,84 @@ public class Landscaper extends RobotPlayer {
         }
 
     }
+
+    static MapLocation checkGround(MapLocation hqLoc, MapLocation myLoc) throws GameActionException {
+        int x_min = -1;
+        int x_max = 1;
+        int y_min = -1;
+        int y_max = 1;
+        int radius = 5;
+        int hqHeight = rc.senseElevation(myLoc);
+        MapLocation seach_center = hqLoc;
+        if (rc.canSenseLocation(hqLoc)) {
+            hqHeight = rc.senseElevation(hqLoc);
+        }
+
+        MapLocation search_location = myLoc;
+        for (int r = 1; r < radius; r++) {
+            for (int b = y_min * r; b < y_max * r; b++) {
+                for (int a = x_min * r; a <= x_max * r; a++) {
+                    myLoc = rc.getLocation();
+                    search_location = new MapLocation(seach_center.x + a, seach_center.y + b);
+                    if (!search_location.equals(hqLoc)) {
+                        if (rc.canSenseLocation(search_location)) {
+                            int target_height = rc.senseElevation(search_location);
+                            System.out.println("LOGICAL TEST " + search_location);
+                            System.out.println("HQ HEIGHT " + hqHeight + " Target Height " + target_height);
+                            if (Math.abs(hqHeight - target_height) > 3) {
+                                System.out.println("TERRAFORMING LOC " + search_location);
+                                return search_location;
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+        return hqLoc;
+    }
+
+    static void terraFormGround(MapLocation scapeLoc) throws GameActionException {
+        System.out.println("TERRAFORMING " + scapeLoc);
+        if (true) {
+            System.out.println("LOGICAL TEST TERRA ");
+            int height_diff = rc.senseElevation(hqLoc) - rc.senseElevation(scapeLoc);
+            System.out.println("HEIGHT DIFF " + height_diff);
+            if (height_diff > 3||rc.senseFlooding(scapeLoc)) {
+                if (rc.getDirtCarrying() > 0 && myLoc.isAdjacentTo(scapeLoc) && rc.isReady()) {
+                    if (rc.canDepositDirt(myLoc.directionTo(scapeLoc))) {
+                        rc.depositDirt(myLoc.directionTo(scapeLoc));
+                        System.out.println("Depositing Dirt " + scapeLoc);
+                    }
+                }
+                if (rc.getDirtCarrying() == 0) {
+                    for (MapLocation digLoc : digLocations) {
+                        if (rc.canSenseLocation(digLoc)) {
+                            if (rc.senseRobotAtLocation(digLoc) == null) {
+                                if (!myLoc.isAdjacentTo(digLoc)) {
+                                    if (rc.isReady()) {
+                                        Direction move_dir = Bug1.BugGetNext(digLoc);
+                                        makeMove(move_dir);
+                                        System.out.println("Moving to Dirt " + move_dir + " " + digLoc);
+
+                                    }
+                                }
+                                if (myLoc.isAdjacentTo(digLoc)) {
+                                    if (rc.isReady()) {
+                                        if (rc.canDigDirt(myLoc.directionTo(digLoc))) {
+                                            rc.digDirt(myLoc.directionTo(digLoc));
+                                            System.out.println("Digging Dirt " + digLoc);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
+
+
+

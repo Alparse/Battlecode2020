@@ -116,43 +116,67 @@ public class Utility extends RobotPlayer {
     }
 
 
-    static ArrayList<MapLocation> largeWall(MapLocation targetLocation) throws GameActionException {
+    static ArrayList<MapLocation> digLocations(MapLocation targetLocation) throws GameActionException {
         ArrayList<MapLocation> largeWall = new ArrayList<>();
 
-        MapLocation search_location1 = new MapLocation(targetLocation.x + -2, targetLocation.y + 2);
-        MapLocation search_location2 = new MapLocation(targetLocation.x + -2, targetLocation.y + 1);
+        MapLocation search_location1 = new MapLocation(targetLocation.x + -3, targetLocation.y - 3);
+        MapLocation search_location2 = new MapLocation(targetLocation.x + -3, targetLocation.y + 3);
         MapLocation search_location3 = new MapLocation(targetLocation.x + -2, targetLocation.y + 0);
-        MapLocation search_location4 = new MapLocation(targetLocation.x + -2, targetLocation.y - 1);
-        MapLocation search_location5 = new MapLocation(targetLocation.x + -2, targetLocation.y - 2);
-        MapLocation search_location6 = new MapLocation(targetLocation.x + -1, targetLocation.y - 2);
-        MapLocation search_location7 = new MapLocation(targetLocation.x + 0, targetLocation.y - 2);
-        MapLocation search_location8 = new MapLocation(targetLocation.x + 1, targetLocation.y - 2);
-        MapLocation search_location9 = new MapLocation(targetLocation.x + 2, targetLocation.y - 2);
-        MapLocation search_location10 = new MapLocation(targetLocation.x + 2, targetLocation.y - 1);
-        MapLocation search_location11 = new MapLocation(targetLocation.x + 2, targetLocation.y + 0);
-        MapLocation search_location12 = new MapLocation(targetLocation.x + 2, targetLocation.y + 1);
-        MapLocation search_location13 = new MapLocation(targetLocation.x + 2, targetLocation.y + 2);
-        MapLocation search_location14 = new MapLocation(targetLocation.x + 1, targetLocation.y + 2);
-        MapLocation search_location15 = new MapLocation(targetLocation.x + 0, targetLocation.y + 2);
-        MapLocation search_location16 = new MapLocation(targetLocation.x - 1, targetLocation.y + 2);
-        largeWall.add(search_location1);
-        largeWall.add(search_location2);
-        largeWall.add(search_location3);
-        largeWall.add(search_location4);
-        largeWall.add(search_location5);
-        largeWall.add(search_location6);
-        largeWall.add(search_location7);
-        largeWall.add(search_location8);
-        largeWall.add(search_location9);
-        largeWall.add(search_location10);
-        largeWall.add(search_location11);
-        largeWall.add(search_location12);
-        largeWall.add(search_location13);
-        largeWall.add(search_location14);
-        largeWall.add(search_location15);
-        largeWall.add(search_location16);
+        MapLocation search_location4 = new MapLocation(targetLocation.x + 0, targetLocation.y +2);
+        MapLocation search_location5 = new MapLocation(targetLocation.x + 0, targetLocation.y - 2);
+        MapLocation search_location6 = new MapLocation(targetLocation.x + 2, targetLocation.y - 0);
+        MapLocation search_location7 = new MapLocation(targetLocation.x + 3, targetLocation.y + 3);
+        MapLocation search_location8 = new MapLocation(targetLocation.x + 3, targetLocation.y - 3);
+        if(rc.onTheMap(search_location1)) {
+            largeWall.add(search_location1);
+        }
+        if(rc.onTheMap(search_location2)) {
+            largeWall.add(search_location2);
+        }
+        if(rc.onTheMap(search_location3)) {
+            largeWall.add(search_location3);
+        }
+        if(rc.onTheMap(search_location4)) {
+            largeWall.add(search_location4);
+        }
+        if(rc.onTheMap(search_location5)) {
+            largeWall.add(search_location5);
+        }
+        if(rc.onTheMap(search_location6)) {
+            largeWall.add(search_location6);
+        }
+        if(rc.onTheMap(search_location7)) {
+            largeWall.add(search_location7);
+        }
+        if(rc.onTheMap(search_location8)) {
+            largeWall.add(search_location8);
+        }
         return largeWall;
     }
+    static ArrayList<MapLocation> buildLocations(MapLocation targetLocation) throws GameActionException {
+        ArrayList<MapLocation> largeWall = new ArrayList<>();
+
+        MapLocation search_location1 = new MapLocation(targetLocation.x + 1, targetLocation.y + 2);
+        MapLocation search_location2 = new MapLocation(targetLocation.x + 2, targetLocation.y + -1);
+        MapLocation search_location3 = new MapLocation(targetLocation.x + -1, targetLocation.y - 2);
+        MapLocation search_location4 = new MapLocation(targetLocation.x + -2, targetLocation.y + 1);
+
+        if(rc.onTheMap(search_location1)) {
+            largeWall.add(search_location1);
+        }
+        if(rc.onTheMap(search_location2)) {
+            largeWall.add(search_location2);
+        }
+        if(rc.onTheMap(search_location3)) {
+            largeWall.add(search_location3);
+        }
+        if(rc.onTheMap(search_location4)) {
+            largeWall.add(search_location4);
+        }
+        return largeWall;
+    }
+
+
 
     static boolean isWalledOffLarge(MapLocation targetLocation) throws GameActionException {
 
@@ -300,7 +324,6 @@ public class Utility extends RobotPlayer {
 
     }
 
-
     static MapLocation enemyXYSymmetric(MapLocation hqLoc) {
         int dx = rc.getMapWidth() - hqLoc.x - 1;
         int dy = rc.getMapHeight() - hqLoc.y - 1;
@@ -321,4 +344,5 @@ public class Utility extends RobotPlayer {
         return (new MapLocation(dx, dy));
 
     }
+
 }

@@ -2,6 +2,7 @@ package Generation1_1;
 
 import battlecode.common.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.StreamSupport;
 
@@ -18,6 +19,7 @@ public class Miner2 extends RobotPlayer {
     static boolean refiningSoup = false;
     static boolean designCenterBuilt=false;
     static int minerJob=0;
+    static ArrayList<MapLocation> buildLocations=null;
 
 
     static void runMiner() throws GameActionException {
@@ -26,6 +28,7 @@ public class Miner2 extends RobotPlayer {
         if (hqLoc == null) {
             Communications.getHqLocFromBlockchain();
         }
+        buildLocations=Utility.buildLocations(hqLoc);
 
 
         while (true) {

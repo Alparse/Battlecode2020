@@ -2,6 +2,7 @@ package Generation1_1;
 
 import battlecode.common.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.StreamSupport;
 
@@ -17,11 +18,13 @@ public class Miner3 extends RobotPlayer {
     static boolean returningSoup = false;
     static boolean refiningSoup = false;
     static boolean designCenterBuilt = false;
-    static boolean fulfillmentCenterBuilt=false;
-    static int vaporatorsBuilt=0;
+    static boolean fulfillmentCenterBuilt = false;
+    static int vaporatorsBuilt = 0;
     static MapLocation refineryLock = null;
     static int minerJob = 0;
     static MapLocation lastSoupLoc = null;
+    static ArrayList<MapLocation> buildLocations = null;
+
 
     enum minerState {SCANNINGSOUP, SEARCHINGSOUP, GOINGSOUP, MININGSOUP, RETURNINGSOUP, DEPOSITINGSOUP, BUILDINGREFINERY}
 
@@ -39,6 +42,7 @@ public class Miner3 extends RobotPlayer {
             minerJob = Communications.getMinerJobFromBlockchain();
         }
         System.out.println("MY JOB IS " + minerJob);
+        buildLocations = Utility.buildLocations(hqLoc);
 
         while (true) {
             try {
@@ -50,73 +54,79 @@ public class Miner3 extends RobotPlayer {
                 Utility.friendlyRobotScan();
                 Utility.enemyRobotScan();
 
-
+                if (rc.getRoundNum()>200){
+                    rc.disintegrate();
+                }
                 if (minerJob == 1) {
                     System.out.println("I AM A CONSTRUCTOR " + (myLoc.distanceSquaredTo(hqLoc)));
-                    if (!designCenterNear && !designCenterBuilt && myLoc.distanceSquaredTo(hqLoc) > 8 && myLoc.distanceSquaredTo(hqLoc) <= 10) {
-                        System.out.println("TESTER TRUE");
-                        for (Direction dir : directions) {
-                            if (Math.abs(myLoc.add(dir).x-hqLoc.x)>=4||(Math.abs(myLoc.add(dir).y-hqLoc.y)>=4)) {
-                                if (rc.isReady() && Utility.tryBuild(RobotType.DESIGN_SCHOOL, dir)) {
-                                    //hqLoc = myLoc.add(dir);
-                                    designCenterNear = true;
-                                    designCenterBuilt = true;
-                                    //minerJob = 0;
-                                    break;
+                    if (!designCenterBuilt) {
+                        for (MapLocation buildLoc : buildLocations) {
+                            if (rc.canSenseLocation(buildLoc)) {
+                                if (rc.senseRobotAtLocation(buildLoc) == null) {
+                                    if (myLoc.isAdjacentTo(buildLoc)) {
+                                        if (rc.isReady() & rc.canBuildRobot(RobotType.DESIGN_SCHOOL, myLoc.directionTo(buildLoc))) {
+                                            rc.buildRobot(RobotType.DESIGN_SCHOOL, myLoc.directionTo(buildLoc));
+                                            designCenterNear = true;
+                                            designCenterBuilt = true;
+                                            minerJob = 1;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (designCenterBuilt && !fulfillmentCenterBuilt) {
+                        for (MapLocation buildLoc : buildLocations) {
+                            if (rc.canSenseLocation(buildLoc)) {
+                                if (rc.senseRobotAtLocation(buildLoc) == null) {
+                                    if (myLoc.isAdjacentTo(buildLoc)) {
+                                        if (rc.isReady() & rc.canBuildRobot(RobotType.FULFILLMENT_CENTER, myLoc.directionTo(buildLoc))) {
+                                            rc.buildRobot(RobotType.FULFILLMENT_CENTER, myLoc.directionTo(buildLoc));
+                                            designCenterNear = true;
+                                            designCenterBuilt = true;
+                                            fulfillmentCenterBuilt=true;
+
+
+                                            minerJob = 1;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (designCenterBuilt && fulfillmentCenterBuilt&&vaporatorsBuilt<2) {
+                        for (MapLocation buildLoc : buildLocations) {
+                            if (rc.canSenseLocation(buildLoc)) {
+                                System.out.println("SENSING BUILD LOC "+buildLoc);
+                                if (rc.senseRobotAtLocation(buildLoc) == null) {
+                                    if (myLoc.isAdjacentTo(buildLoc)) {
+                                        if (rc.isReady() & rc.canBuildRobot(RobotType.VAPORATOR, myLoc.directionTo(buildLoc))) {
+                                            rc.buildRobot(RobotType.VAPORATOR, myLoc.directionTo(buildLoc));
+                                            designCenterNear = true;
+                                            designCenterBuilt = true;
+                                            vaporatorsBuilt=vaporatorsBuilt+1;
+
+                                            minerJob = 1;
+                                            break;
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
 
-                    if (designCenterBuilt &&!fulfillmentCenterBuilt&&vaporatorsBuilt==0) {
-                        System.out.println("TESTER TRUE fulfillment cent build "+hqLoc);
-                        for (Direction dir : directions) {
-                            if (Utility.isKeepBuildLocation(hqLoc,myLoc.add(dir))) {
-                                if (rc.isReady() && Utility.tryBuild(RobotType.FULFILLMENT_CENTER, dir)) {
-                                    designCenterNear = true;
-                                    fulfillmentCenterBuilt = true;
-                                    vaporatorsBuilt=vaporatorsBuilt+1;
-
-                                    minerJob = 1;
-                                    break;
+                    if (!designCenterBuilt || !fulfillmentCenterBuilt || vaporatorsBuilt <2)
+                        for (MapLocation buildLoc : buildLocations) {
+                            if (rc.canSenseLocation(buildLoc)&&!myLoc.isAdjacentTo(buildLoc)) {
+                                if (rc.senseRobotAtLocation(buildLoc) == null) {
+                                    Direction move_dir = Bug1.BugGetNext(buildLoc);
+                                    makeMove(move_dir);
+                                    System.out.println("MADE MOVE ");
                                 }
                             }
                         }
-                    }
-                    if (designCenterBuilt &&fulfillmentCenterBuilt) {
-                        System.out.println("TESTER TRUE fulfillment cent build "+hqLoc);
-                        for (Direction dir : directions) {
-                            if (Utility.isKeepBuildLocation(hqLoc,myLoc.add(dir))) {
-                                if (rc.isReady() && Utility.tryBuild(RobotType.VAPORATOR, dir)) {
-                                    designCenterNear = true;
-                                    fulfillmentCenterBuilt = true;
-
-                                    minerJob = 1;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-
-                    if (myLoc.distanceSquaredTo(hqLoc) > 13) {
-                        explore_Dir = myLoc.directionTo(hqLoc);
-                    }
-                    if (myLoc.distanceSquaredTo(hqLoc) <= 13 && myLoc.distanceSquaredTo(hqLoc) > 8) {
-                        explore_Dir = myLoc.directionTo(hqLoc).rotateRight().rotateRight();
-                    }
-                    if (myLoc.distanceSquaredTo(hqLoc) <= 8) {
-                        System.out.println("<8");
-                        explore_Dir = myLoc.directionTo(hqLoc).opposite();
-                    }
-                    if (rc.isReady() && rc.canMove(explore_Dir)) {
-                        makeMove(explore_Dir);
-                    }
-                    if (rc.isReady() && !rc.canMove(explore_Dir)) {
-                        while (!rc.canMove(explore_Dir)) {
-                            explore_Dir = explore_Dir.rotateRight();
-                        }
-                        makeMove(explore_Dir);
-                    }
                 }
 
                 if (minerJob == 0) {
@@ -196,7 +206,7 @@ public class Miner3 extends RobotPlayer {
                                 break;
                             }
                             if (myLoc.distanceSquaredTo(refineryLock) < 9) {
-                                if (Utility.isWalledOff(refineryLock)&&rc.getRoundNum()>100) {
+                                if (Utility.isWalledOff(refineryLock) && rc.getRoundNum() > 100) {
                                     System.out.println("DESTINATION WALLED OFF");
                                     myState = minerState.BUILDINGREFINERY;
                                     RobotInfo currentRefinery = rc.senseRobotAtLocation(refineryLock);
@@ -246,7 +256,7 @@ public class Miner3 extends RobotPlayer {
                                 break;
                             }
                             for (Direction dir : directions) {
-                                if (Math.abs(myLoc.add(dir).x-hqLoc.x)>=4||(Math.abs(myLoc.add(dir).y-hqLoc.y)>=4)) {
+                                if (Math.abs(myLoc.add(dir).x - hqLoc.x) >= 4 || (Math.abs(myLoc.add(dir).y - hqLoc.y) >= 4)) {
                                     if (rc.isReady() && Utility.tryBuild(RobotType.REFINERY, dir)) {
                                         refineryLock = myLoc.add(dir);
                                         refineryNear = true;
@@ -394,6 +404,7 @@ public class Miner3 extends RobotPlayer {
         }
         return totalSoup;
     }
+
 
     static void mother_Nearby() {
         for (RobotInfo r : friendlyRobots) {
