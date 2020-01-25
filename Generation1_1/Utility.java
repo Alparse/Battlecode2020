@@ -180,28 +180,28 @@ public class Utility extends RobotPlayer {
         MapLocation search_location2 = new MapLocation(targetLocation.x + -3, targetLocation.y + 1);
         MapLocation search_location3 = new MapLocation(targetLocation.x + -3, targetLocation.y - 0);
         MapLocation search_location4 = new MapLocation(targetLocation.x + -3, targetLocation.y + -1);
-        MapLocation search_location5 = new MapLocation(targetLocation.x + -2, targetLocation.y + 2);
-        MapLocation search_location6 = new MapLocation(targetLocation.x - 2, targetLocation.y - 1);
-        MapLocation search_location7 = new MapLocation(targetLocation.x - 2, targetLocation.y - 2);
-        MapLocation search_location8 = new MapLocation(targetLocation.x - 2, targetLocation.y - 3);
+        MapLocation search_location5 = new MapLocation(targetLocation.x + -2, targetLocation.y - 1);
+        MapLocation search_location6 = new MapLocation(targetLocation.x - 2, targetLocation.y - 2);
+        MapLocation search_location7 = new MapLocation(targetLocation.x - 2, targetLocation.y - 3);
+        MapLocation search_location8 = new MapLocation(targetLocation.x - 1, targetLocation.y - 3);
 
-        MapLocation search_location9 = new MapLocation(targetLocation.x - 1, targetLocation.y + 3);
-        MapLocation search_location10 = new MapLocation(targetLocation.x + -1, targetLocation.y + 2);
-        MapLocation search_location11 = new MapLocation(targetLocation.x + -1, targetLocation.y - 3);
-        MapLocation search_location12 = new MapLocation(targetLocation.x + 0, targetLocation.y + 3);
-        MapLocation search_location13 = new MapLocation(targetLocation.x + 0, targetLocation.y - 3);
-        MapLocation search_location14 = new MapLocation(targetLocation.x + 1, targetLocation.y + 3);
-        MapLocation search_location15 = new MapLocation(targetLocation.x + 1, targetLocation.y - 2);
-        MapLocation search_location16 = new MapLocation(targetLocation.x + 1, targetLocation.y - 3);
+        MapLocation search_location9 = new MapLocation(targetLocation.x - 0, targetLocation.y - 3);
+        MapLocation search_location10 = new MapLocation(targetLocation.x + 1, targetLocation.y -3);
+        MapLocation search_location11 = new MapLocation(targetLocation.x + 1, targetLocation.y - 2);
+        MapLocation search_location12 = new MapLocation(targetLocation.x + 2, targetLocation.y -2);
+        MapLocation search_location13 = new MapLocation(targetLocation.x + 3, targetLocation.y - 2);
+        MapLocation search_location14 = new MapLocation(targetLocation.x + 3, targetLocation.y - 1);
+        MapLocation search_location15 = new MapLocation(targetLocation.x + 3, targetLocation.y - 0);
+        MapLocation search_location16 = new MapLocation(targetLocation.x + 3, targetLocation.y + 1);
 
-        MapLocation search_location17 = new MapLocation(targetLocation.x + 2, targetLocation.y + 3);
+        MapLocation search_location17 = new MapLocation(targetLocation.x + 2, targetLocation.y + 1);
         MapLocation search_location18 = new MapLocation(targetLocation.x + 2, targetLocation.y + 2);
-        MapLocation search_location19 = new MapLocation(targetLocation.x + 2, targetLocation.y + 1);
-        MapLocation search_location20 = new MapLocation(targetLocation.x + 2, targetLocation.y + -2);
-        MapLocation search_location21 = new MapLocation(targetLocation.x + 3, targetLocation.y + 1);
-        MapLocation search_location22 = new MapLocation(targetLocation.x + 3, targetLocation.y + 0);
-        MapLocation search_location23 = new MapLocation(targetLocation.x + 3, targetLocation.y + -1);
-        MapLocation search_location24 = new MapLocation(targetLocation.x + 3, targetLocation.y - 2);
+        MapLocation search_location19 = new MapLocation(targetLocation.x + 2, targetLocation.y + 3);
+        MapLocation search_location20 = new MapLocation(targetLocation.x + 1, targetLocation.y + 3);
+        MapLocation search_location21 = new MapLocation(targetLocation.x + 0, targetLocation.y + 3);
+        MapLocation search_location22 = new MapLocation(targetLocation.x -1, targetLocation.y + 3);
+        MapLocation search_location23 = new MapLocation(targetLocation.x -1, targetLocation.y + 2);
+        MapLocation search_location24 = new MapLocation(targetLocation.x -2, targetLocation.y + 2);
 
         if(rc.onTheMap(search_location1)) {
             largeWall.add(search_location1);
@@ -446,6 +446,14 @@ public class Utility extends RobotPlayer {
         int dy = hqLoc.y;
         return (new MapLocation(dx, dy));
 
+    }
+    public static void makeMove(Direction move_dir) throws GameActionException {
+        if (rc.isReady() && rc.canMove(move_dir)) {
+            rc.move(move_dir);
+            System.out.println("MOVE DIR IS " + move_dir);
+            trail.add(myLoc.add(move_dir));
+
+        }
     }
 
 }
