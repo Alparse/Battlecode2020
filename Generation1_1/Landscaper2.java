@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 public class Landscaper2 extends RobotPlayer {
 
-    enum landscaperState {START,TRAVELINGOUTERWALL, TRAVELINGINNERWALL, TERRAFORMING, MOVINGONOUTERWALL, BUILDINGOUTERWALL, MANNINGOUTERWALL, BUILDINGINNERWALL,MOVINGINNERWALL, MANNINGINNERWALL, RESCUINGBUILDING, ATTACKINGBUILDING}
+    enum landscaperState {START, TRAVELINGOUTERWALL, TRAVELINGINNERWALL, TERRAFORMING, MOVINGONOUTERWALL, BUILDINGOUTERWALL, MANNINGOUTERWALL, BUILDINGINNERWALL, MOVINGINNERWALL, MANNINGINNERWALL, RESCUINGBUILDING, ATTACKINGBUILDING}
 
     static landscaperState myState = landscaperState.TRAVELINGOUTERWALL;
 
@@ -14,6 +14,7 @@ public class Landscaper2 extends RobotPlayer {
     static int landScaperJob = 99;
     static ArrayList<MapLocation> digLocations = null;
     static ArrayList<MapLocation> outerWallLocations = null;
+    static ArrayList<MapLocation> innerWallLocations = null;
     static MapLocation lastLoc = null;
     static boolean movedOnWall = false;
 
@@ -31,8 +32,13 @@ public class Landscaper2 extends RobotPlayer {
 
         digLocations = Utility.digLocations(hqLoc);
         outerWallLocations = Utility.outerWallArray(hqLoc);
+        innerWallLocations = Utility.innerWallArray(hqLoc);
 
-
+        if (rc.getRoundNum() > 300) {
+            if (myLoc.isAdjacentTo(hqLoc)) {
+                myState = landscaperState.MOVINGINNERWALL;
+            }
+        }
         while (true) {
             try {
                 myLoc = rc.getLocation();
@@ -41,29 +47,9 @@ public class Landscaper2 extends RobotPlayer {
                 enemyRobots = rc.senseNearbyRobots(-1, enemyTeam);
                 Utility.friendlyRobotScan();
                 Utility.enemyRobotScan();
-                if(rc.getRoundNum()>500) {
-                    if (myLoc.isAdjacentTo(hqLoc)) {
-                        myState = landscaperState.BUILDINGINNERWALL;
-                    }
-                }
+
 
                 switch (myState) {
-
-                    case BUILDINGINNERWALL:
-
-                        if (rc.getDirtCarrying() == 0) {
-                            getDirt(myLoc);
-                        }
-                        if (rc.getDirtCarrying() > 0) {
-                            if (rc.isReady()) {
-                                if (rc.canDepositDirt(Direction.CENTER)) {
-                                    rc.depositDirt(Direction.CENTER);
-                                }
-                            }
-                        }
-                        break;
-
-
 
                     case TRAVELINGOUTERWALL:
                         System.out.println(myState);
@@ -131,7 +117,7 @@ public class Landscaper2 extends RobotPlayer {
                                 }
                             }
                         }
-                        if (rc.senseElevation(outerWallLocations.get(nextIndex)) - myHeight <=3 ) {
+                        if (rc.senseElevation(outerWallLocations.get(nextIndex)) - myHeight <= 3) {
                             //add to next location till ok
                             if (rc.canDepositDirt(myLoc.directionTo(outerWallLocations.get(nextIndex)))) {
                                 if (rc.isReady()) {
@@ -141,6 +127,86 @@ public class Landscaper2 extends RobotPlayer {
                             }
                         }
                         break;
+
+                    case TRAVELINGINNERWALL:
+                        System.out.println(myState);
+                        if (innerWallLocations.contains(myLoc)) {
+                            myState = landscaperState.MOVINGINNERWALL;
+                            break;
+                        }
+
+                        if (!innerWallLocations.contains(myLoc)) {
+                            MapLocation target_location = closestWallLocation(innerWallLocations);
+                            Direction move_dir = Bug1.BugGetNext(target_location);
+                            Utility.makeMove(move_dir);
+                        }
+                        break;
+
+                    case MOVINGINNERWALL:
+                        System.out.println(myState);
+                        if (!innerWallLocations.contains(myLoc)) {
+                            myState = landscaperState.TRAVELINGINNERWALL;
+                        }
+                        if (innerWallLocations.contains(myLoc)) {
+                            currentIndex = innerWallLocations.indexOf(myLoc);
+                            nextIndex = 0;
+                            if (currentIndex < innerWallLocations.size() - 1) {
+                                nextIndex = currentIndex + 1;
+                            }
+                            if (currentIndex == innerWallLocations.size() - 1) {
+                                nextIndex = 0;
+                            }
+                            if (Math.abs(rc.senseElevation(innerWallLocations.get(nextIndex)) - myHeight) > 3) {
+                                myState = landscaperState.BUILDINGINNERWALL;
+                                break;
+                            }
+                            Direction move_dir = myLoc.directionTo(innerWallLocations.get(nextIndex));
+                            if (rc.canMove(move_dir) && !rc.senseFlooding(myLoc.add(move_dir))) {
+                                rc.move(move_dir);
+                                myState = landscaperState.BUILDINGINNERWALL;
+                            }
+
+                        }
+                        break;
+
+                    case BUILDINGINNERWALL:
+                        System.out.println(myState);
+                        //check next step;
+                        if (rc.getDirtCarrying() == 0) {
+                            getDirt(myLoc);
+                        }
+                        currentIndex = innerWallLocations.indexOf(myLoc);
+                        nextIndex = 0;
+                        if (currentIndex < innerWallLocations.size() - 1) {
+                            nextIndex = currentIndex + 1;
+                        }
+                        if (currentIndex == innerWallLocations.size() - 1) {
+                            nextIndex = 0;
+                        }
+
+                        if (rc.senseElevation(innerWallLocations.get(nextIndex)) - myHeight > 3) {
+                            //add to my location till ok
+                            if (rc.canDepositDirt(Direction.CENTER)) {
+                                if (rc.isReady()) {
+                                    rc.depositDirt(Direction.CENTER);
+                                    myState = landscaperState.MOVINGINNERWALL;
+                                    System.out.println("INNER WALL MOVE1");
+                                }
+                            }
+                        }
+                        if (rc.senseElevation(innerWallLocations.get(nextIndex)) - myHeight <= 3) {
+                            //add to next location till ok
+                            if (rc.canDepositDirt(myLoc.directionTo(innerWallLocations.get(nextIndex)))) {
+                                if (rc.isReady()) {
+                                    rc.depositDirt(myLoc.directionTo(innerWallLocations.get(nextIndex)));
+                                    myState = landscaperState.MOVINGINNERWALL;
+                                    System.out.println("INNER WALL MOVE2");
+                                }
+                            }
+                        }
+                        break;
+
+
                 }
 
 
