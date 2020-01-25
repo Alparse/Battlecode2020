@@ -23,6 +23,7 @@ public class Landscaper extends RobotPlayer {
     static MapLocation enemyHQ = null;
     static boolean communicatedEnemyHQ = false;
     static ArrayList<MapLocation> digLocations = null;
+    static ArrayList<MapLocation> outerWallLocations = null;
     static boolean started_terraforming = false;
 
 
@@ -39,6 +40,7 @@ public class Landscaper extends RobotPlayer {
         myLoc = rc.getLocation();
         myHeight = rc.senseElevation(myLoc);
         digLocations = Utility.digLocations(hqLoc);
+        outerWallLocations=Utility.outerWallArray(hqLoc);
         mother_Nearby();
 
         while (true) {
