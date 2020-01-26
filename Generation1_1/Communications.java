@@ -2,6 +2,7 @@ package Generation1_1;
 
 import battlecode.common.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 
@@ -181,6 +182,36 @@ public class Communications extends RobotPlayer {
                     rc.submitTransaction(message, messageQue.get(m).getBid());
                 }
 
+            }
+        }
+    }
+    public static void constructionStatus(int bid,int design_center,int fulfillment_center,int vaporatorsBuilt) throws GameActionException {
+
+        int teamSecret = rc.getRoundNum() * 2 + 3333;
+        int[] message = new int[7];
+        message[0] = teamSecret;
+        message[1] = 30;
+        message[2] = design_center;
+        message[3] = fulfillment_center;
+        message[4] = vaporatorsBuilt;
+        message[5] = 0;
+        message[6] = rc.getID();
+        if (rc.canSubmitTransaction(message, bid)) {
+            rc.submitTransaction(message, bid);
+            messageQue.add(new Message_Que(0, bid, message[0], message[1], message[2], message[3], message[4], message[5], message[6]));
+        }
+    }
+    public static void getConstructionStatus() throws GameActionException {
+        for (int i = 1; i < rc.getRoundNum(); i++) {
+            for (Transaction tx : rc.getBlock(i)) {
+                int[] mess = tx.getMessage();
+                if (mess[0] == 3333 + i * 2 && mess[1] == 30) {
+
+                    System.out.println(Arrays.toString(mess));
+                    design_centerBuilt=mess[2];
+                    fulfillment_centerBuilt=mess[3];
+                    vaporatorsBuilt=mess[4];
+                }
             }
         }
     }

@@ -37,10 +37,8 @@ public class Landscaper2 extends RobotPlayer {
         outerWallLocations = Utility.outerWallArray(hqLoc);
         innerWallLocations = Utility.innerWallArray(hqLoc);
 
-        if (rc.getRoundNum() > 300) {
-            if (myLoc.isAdjacentTo(hqLoc)) {
-                myState = landscaperState.MOVINGINNERWALL;
-            }
+        if (rc.getRoundNum() > 250) {
+            myState = landscaperState.TRAVELINGINNERWALL;
         }
         while (true) {
             try {
@@ -131,19 +129,16 @@ public class Landscaper2 extends RobotPlayer {
                             movingClockwise = false;
                             movingCounterClockwise = true;
                             nextIndex = getNextIndex(myLoc);
-                            System.out.println("133");
+
                         }
                         if (movingCounterClockwise && !rc.onTheMap(outerWallLocations.get(nextIndex))) {
                             movingClockwise = true;
                             movingCounterClockwise = false;
                             nextIndex = getNextIndex(myLoc);
-                            System.out.println("139");
+
                         }
 
                         //nextIndex = getNextIndex(myLoc);
-                        System.out.println("NEXT INDEX " + nextIndex);
-
-                        System.out.println(outerWallLocations.get(nextIndex));
 
 
                         if (rc.senseFlooding((outerWallLocations.get(nextIndex)))) {
@@ -200,73 +195,43 @@ public class Landscaper2 extends RobotPlayer {
                                     break;
                                 }
                             }
+                            if (rc.getRoundNum()>600){
+                                myState=landscaperState.BUILDINGOUTERWALL;
+                            }
                         }
 
                         break;
 
                     case TRAVELINGINNERWALL:
                         System.out.println(myState);
-                        if (innerWallLocations.contains(myLoc)) {
-                            myState = landscaperState.MOVINGINNERWALL;
-                            break;
-                        }
+                        MapLocation target_location = findBestInnerWallLocation(myLoc);
+                        if(rc.getRoundNum()<600) {
 
-                        if (!innerWallLocations.contains(myLoc)) {
-                            MapLocation target_location = closestWallLocation(innerWallLocations);
                             Direction move_dir = Bug1.BugGetNext(target_location);
                             Utility.makeMove(move_dir);
                         }
-                        break;
-
-                    case MOVINGINNERWALL:
-                        System.out.println(myState);
-                        if (!innerWallLocations.contains(myLoc)) {
-                            myState = landscaperState.TRAVELINGINNERWALL;
-                        }
-                        if (innerWallLocations.contains(myLoc)) {
-                            nextIndex = getNextIndex(myLoc);
-                            if (Math.abs(rc.senseElevation(innerWallLocations.get(nextIndex)) - myHeight) > 3) {
-                                myState = landscaperState.BUILDINGINNERWALL;
-                                break;
-                            }
-                            Direction move_dir = myLoc.directionTo(innerWallLocations.get(nextIndex));
-                            if (rc.canMove(move_dir) && !rc.senseFlooding(myLoc.add(move_dir))) {
-                                rc.move(move_dir);
-                                myState = landscaperState.BUILDINGINNERWALL;
-                            }
-
-                        }
-                        break;
-
-                    case BUILDINGINNERWALL:
-                        System.out.println(myState);
-                        //check next step;
-                        if (rc.getDirtCarrying() == 0) {
-                            getDirt(myLoc);
-                        }
-                        nextIndex = getNextIndex(myLoc);
-
-                        if (rc.senseElevation(innerWallLocations.get(nextIndex)) - myHeight >= 3) {
-                            //add to my location till ok
-                            if (rc.canDepositDirt(Direction.CENTER)) {
-                                if (rc.isReady()) {
-                                    rc.depositDirt(Direction.CENTER);
-                                    myState = landscaperState.MOVINGINNERWALL;
+                            if (myLoc == target_location || rc.getRoundNum() > 400) {
+                                if (rc.getDirtCarrying() == 0) {
+                                    getDirt(myLoc);
                                 }
-                            }
-                        }
-                        if (rc.senseElevation(innerWallLocations.get(nextIndex)) - myHeight < 3) {
-                            //add to next location till ok
-                            if (rc.canDepositDirt(myLoc.directionTo(innerWallLocations.get(nextIndex)))) {
-                                if (rc.isReady()) {
-                                    rc.depositDirt(myLoc.directionTo(innerWallLocations.get(nextIndex)));
-                                    myState = landscaperState.MOVINGINNERWALL;
+                                if (rc.getDirtCarrying() > 0) {
+                                    if (rc.isReady()) {
+                                        for(Direction dir:directions){
+                                            if (myHeight>rc.senseElevation(myLoc.add(dir))&&innerWallLocations.contains(myLoc.add(dir))){
+                                                if (rc.canDepositDirt(dir)) {
+                                                    rc.depositDirt(dir);
+                                                    break;
+                                            }
+                                        }
+                                        }
+                                        if (rc.canDepositDirt(Direction.CENTER)) {
+                                            rc.depositDirt(Direction.CENTER);
+                                        }
+                                    }
                                 }
-                            }
+
                         }
                         break;
-
-
                 }
 
 
@@ -293,16 +258,16 @@ public class Landscaper2 extends RobotPlayer {
     }
 
     static void getDirt(MapLocation myLoc) throws GameActionException {
-        System.out.println(digLocations);
+
         myLoc = rc.getLocation();
         if (rc.isReady()) {
             for (MapLocation digLoc : digLocations) {
-                System.out.println("DIGLOC" + digLoc);
+
                 if (myLoc.isAdjacentTo(digLoc)) {
-                    System.out.println("USED DIGLOC " + digLoc);
+
                     if (rc.canDigDirt(myLoc.directionTo(digLoc))) {
                         rc.digDirt(myLoc.directionTo(digLoc));
-                        System.out.println("DUG AT " + digLoc);
+
                         return;
                     }
                 }
@@ -313,7 +278,7 @@ public class Landscaper2 extends RobotPlayer {
     static int getNextIndex(MapLocation myLoc) {
         myLoc = rc.getLocation();
         int currentIndex = outerWallLocations.indexOf(myLoc);
-        System.out.println(("CURRENT INDEX " + currentIndex));
+
 
         int nextIndex = 0;
         if (outerWallLocations.size() <= 24) {
@@ -344,5 +309,38 @@ public class Landscaper2 extends RobotPlayer {
             }
         }
         return nextIndex;
+    }
+    static MapLocation findBestInnerWallLocation(MapLocation myLoc) throws GameActionException {
+        if (rc.senseRobotAtLocation(hqLoc.add(Direction.NORTHWEST)) == null) {
+            return hqLoc.add(Direction.NORTHWEST);
+
+        }
+        if (rc.senseRobotAtLocation(hqLoc.add(Direction.SOUTHWEST)) == null) {
+            return hqLoc.add(Direction.SOUTHWEST);
+
+        }
+        if (rc.senseRobotAtLocation(hqLoc.add(Direction.NORTHEAST)) == null) {
+            return hqLoc.add(Direction.NORTHEAST);
+
+        }
+        if (rc.senseRobotAtLocation(hqLoc.add(Direction.SOUTHEAST)) == null) {
+            return hqLoc.add(Direction.SOUTHEAST);
+        }
+        if (rc.senseRobotAtLocation(hqLoc.add(Direction.SOUTH)) == null) {
+            return hqLoc.add(Direction.SOUTH);
+
+        }
+        if (rc.senseRobotAtLocation(hqLoc.add(Direction.WEST)) == null) {
+            return hqLoc.add(Direction.WEST);
+
+        }
+        if (rc.senseRobotAtLocation(hqLoc.add(Direction.NORTH)) == null) {
+            return hqLoc.add(Direction.NORTH);
+
+        }
+        if (rc.senseRobotAtLocation(hqLoc.add(Direction.EAST)) == null) {
+            return hqLoc.add(Direction.EAST);
+        }
+        return myLoc;
     }
 }

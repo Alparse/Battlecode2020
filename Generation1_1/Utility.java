@@ -428,6 +428,7 @@ public class Utility extends RobotPlayer {
         MapLocation search_location2 = new MapLocation(targetLocation.x + 2, targetLocation.y + -1);
         MapLocation search_location3 = new MapLocation(targetLocation.x + -1, targetLocation.y - 2);
         MapLocation search_location4 = new MapLocation(targetLocation.x + -2, targetLocation.y + 1);
+
         if (object.equals(search_location1) || object.equals(search_location2) || object.equals(search_location3) || object.equals(search_location4)) {
             return true;
         }
@@ -511,7 +512,7 @@ public class Utility extends RobotPlayer {
     public static void makeMove(Direction move_dir) throws GameActionException {
         if (rc.isReady() && rc.canMove(move_dir)) {
             rc.move(move_dir);
-            System.out.println("MOVE DIR IS " + move_dir);
+
             trail.add(myLoc.add(move_dir));
 
         }
