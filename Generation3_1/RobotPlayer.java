@@ -117,9 +117,9 @@ public strictfp class RobotPlayer {
                     case DESIGN_SCHOOL:
                         DesignSchool.runDesignSchool();
                         break;
-                    //case FULFILLMENT_CENTER: runFulfillmentCenter(); break;
+                    case FULFILLMENT_CENTER: FulfillmentCenter.runFulfillmentCenter(); break;
                     case LANDSCAPER:         Landscaper2.runLandscaper();        break;
-                    //case DELIVERY_DRONE:     runDeliveryDrone();     break;
+                    case DELIVERY_DRONE:     Drone.runDrone();     break;
                     //case NET_GUN:            runNetGun();            break;
                 }
 

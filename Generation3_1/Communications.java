@@ -244,4 +244,35 @@ public class Communications extends RobotPlayer {
             }
         }
     }
+    public static void sendDroneSwarmLoc(MapLocation loc, int bid) throws GameActionException {
+
+        int teamSecret = rc.getRoundNum() * 2 + 3333;
+        int[] message = new int[7];
+        message[0] = teamSecret;
+        message[1] = 88;
+        message[2] = 0;
+        message[3] = loc.x;
+        message[4] = loc.y;
+        message[5] = 0;
+        message[6] = rc.getID();
+        if (rc.canSubmitTransaction(message, bid)) {
+            rc.submitTransaction(message, bid);
+            System.out.println("ENEMY HQ LOC SENT");
+            messageQue.add(new Message_Que(0, bid, message[0], message[1], message[2], message[3], message[4], message[5], message[6]));
+        }
+    }
+    public static MapLocation getDroneSwarmLoc() throws GameActionException {
+        for (int i = 1; i < rc.getRoundNum(); i++) {
+            System.out.println("BLOCKCHAIN");
+            for (Transaction tx : rc.getBlock(i)) {
+                int[] mess = tx.getMessage();
+                if (mess[0] == 3333 + i * 2 && mess[1] == 88) {
+                    System.out.println("GOT MESSAGE ENEMY HQ");
+                    System.out.println(Arrays.toString(mess));
+                    return new MapLocation(mess[3], mess[4]);
+                }
+            }
+        }
+        return null;
+    }
 }

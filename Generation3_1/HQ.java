@@ -26,6 +26,9 @@ public class HQ extends RobotPlayer {
         Communications.checkMessagesQue();
         Communications.clearMessageQue();
         HQButtonedUp=HQButtonUpStatus(myLoc);
+        if(rc.getRoundNum()>750){
+            Communications.sendDroneSwarmLoc(Utility.enemyYSymmetric(hqLoc),3);
+        }
         if(rc.getRoundNum()%20==0) {
             Communications.HQButtonedUp(1, HQButtonedUp);
         }

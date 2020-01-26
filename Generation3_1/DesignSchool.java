@@ -19,7 +19,7 @@ public class DesignSchool extends RobotPlayer {
         Communications.getConstructionStatus();
         System.out.println(design_centerBuilt + " " + fulfillment_centerBuilt + " " + vaporatorsBuilt);
         if (rc.getRoundNum() > 50) {
-            if ((landscapers_built < 1 && rc.getTeamSoup() > 200)) {
+            if ((landscapers_built < 2 && rc.getTeamSoup() > 200)) {
                 for (Direction dir : directions)
                     if (Utility.tryBuild(RobotType.LANDSCAPER, dir)) {
                         RobotInfo built_robot = rc.senseRobotAtLocation(myLoc.add(dir));
