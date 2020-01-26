@@ -37,7 +37,7 @@ public class Landscaper2 extends RobotPlayer {
         outerWallLocations = Utility.outerWallArray(hqLoc);
         innerWallLocations = Utility.innerWallArray(hqLoc);
 
-        if (rc.getRoundNum() > 250) {
+        if (rc.getRoundNum() > 100) {
             myState = landscaperState.TRAVELINGINNERWALL;
         }
         while (true) {
@@ -48,6 +48,7 @@ public class Landscaper2 extends RobotPlayer {
                 enemyRobots = rc.senseNearbyRobots(-1, enemyTeam);
                 Utility.friendlyRobotScan();
                 Utility.enemyRobotScan();
+
 
 
                 switch (myState) {
@@ -204,32 +205,36 @@ public class Landscaper2 extends RobotPlayer {
 
                     case TRAVELINGINNERWALL:
                         System.out.println(myState);
-                        MapLocation target_location = findBestInnerWallLocation(myLoc);
-                        if(rc.getRoundNum()<600) {
 
-                            Direction move_dir = Bug1.BugGetNext(target_location);
-                            Utility.makeMove(move_dir);
-                        }
-                            if (myLoc == target_location || rc.getRoundNum() > 400) {
+                            if(!myLoc.isAdjacentTo(hqLoc)) {
+                                Direction move_dir = Bug1.BugGetNext(myLoc.add(myLoc.directionTo(hqLoc)));
+                                Utility.makeMove(move_dir);
+                            }
+                            if(myLoc.isAdjacentTo(hqLoc)) {
+                                HQButtonedUp = HQ.HQButtonUpStatus(hqLoc);
+                            }
+                            if(HQButtonedUp>=8){
+                            if (myLoc.isAdjacentTo(hqLoc)) {
                                 if (rc.getDirtCarrying() == 0) {
                                     getDirt(myLoc);
                                 }
                                 if (rc.getDirtCarrying() > 0) {
                                     if (rc.isReady()) {
-                                        for(Direction dir:directions){
-                                            if (myHeight>rc.senseElevation(myLoc.add(dir))&&innerWallLocations.contains(myLoc.add(dir))){
+                                        for (Direction dir : directions) {
+                                            if (myHeight > rc.senseElevation(myLoc.add(dir)) && innerWallLocations.contains(myLoc.add(dir))) {
                                                 if (rc.canDepositDirt(dir)) {
                                                     rc.depositDirt(dir);
                                                     break;
+                                                }
                                             }
-                                        }
                                         }
                                         if (rc.canDepositDirt(Direction.CENTER)) {
                                             rc.depositDirt(Direction.CENTER);
                                         }
                                     }
                                 }
-
+                                myState = landscaperState.TRAVELINGINNERWALL;
+                            }
                         }
                         break;
                 }
@@ -343,4 +348,5 @@ public class Landscaper2 extends RobotPlayer {
         }
         return myLoc;
     }
+
 }

@@ -50,6 +50,7 @@ public strictfp class RobotPlayer {
     static int design_centerBuilt=0;
     static int fulfillment_centerBuilt=0;
     static int vaporatorsBuilt=0;
+    static int HQButtonedUp=0;
     static ArrayList<Message_Que> messageQue=new ArrayList<>();
     static ArrayList<MapLocation> largeWall=new ArrayList<>();
 

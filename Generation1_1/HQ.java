@@ -28,6 +28,9 @@ public class HQ extends RobotPlayer {
 
         Communications.checkMessagesQue();
         Communications.clearMessageQue();
+        HQButtonedUp=HQButtonUpStatus(myLoc);
+        Communications.HQButtonedUp(3,HQButtonedUp);
+
         if(rc.getRoundNum()<5) {
             Communications.sendHqLoc(myLoc,3);
         }
@@ -95,6 +98,18 @@ public class HQ extends RobotPlayer {
             }
         }
         return my_prioritized_targets;
+    }
+    static int HQButtonUpStatus(MapLocation myLoc) throws GameActionException {
+        int buttonedUp=0;
+        for (Direction dir:directions){
+            RobotInfo tempBot=rc.senseRobotAtLocation(myLoc.add(dir));
+            if (tempBot!=null){
+                if (tempBot.type==RobotType.LANDSCAPER){
+                    buttonedUp=buttonedUp+1;
+                }
+            }
+        }
+        return buttonedUp;
     }
 
 
