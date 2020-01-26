@@ -31,7 +31,7 @@ public class DesignSchool extends RobotPlayer {
                         break;
                     }
             }
-            if (landscapers_built == 1 && rc.getTeamSoup() >= 200&&rc.getRoundNum()>500) {
+            if (landscapers_built <8 && rc.getTeamSoup() >= 200&&rc.getRoundNum()>500) {
                 for (Direction dir : directions)
                     if (Utility.tryBuild(RobotType.LANDSCAPER, dir)) {
                         RobotInfo built_robot = rc.senseRobotAtLocation(myLoc.add(dir));
@@ -41,7 +41,7 @@ public class DesignSchool extends RobotPlayer {
                     }
             }
 
-            if ((landscapers_built >= 2 && landscapers_built < 18 && rc.getTeamSoup() >= 200) && rc.getRoundNum() > 500) {
+            if ((landscapers_built >= 8 && landscapers_built < 16 && rc.getTeamSoup() >= (800-(200*(landscapers_built-8))) && rc.getRoundNum() > 500)) {
                 for (Direction dir : directions)
                     if (Utility.tryBuild(RobotType.LANDSCAPER, dir)) {
                         RobotInfo built_robot = rc.senseRobotAtLocation(myLoc.add(dir));

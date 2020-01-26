@@ -17,6 +17,8 @@ public class Landscaper2 extends RobotPlayer {
     static ArrayList<MapLocation> innerWallLocations = null;
     static MapLocation lastLoc = null;
     static boolean movedOnWall = false;
+    static boolean movingClockwise = false;
+    static boolean movingCounterClockwise = true;
 
     static void runLandscaper() throws GameActionException {
         if (rc.getRoundNum() > 0) {
@@ -66,63 +68,55 @@ public class Landscaper2 extends RobotPlayer {
                         break;
 
                     case MOVINGONOUTERWALL:
+                        int nextIndex = 0;
                         System.out.println(myState);
                         if (!outerWallLocations.contains(myLoc)) {
                             myState = landscaperState.TRAVELINGOUTERWALL;
+                            break;
                         }
+
                         if (outerWallLocations.contains(myLoc)) {
-                            int currentIndex = outerWallLocations.indexOf(myLoc);
-                            int nextIndex = 0;
-                            if (currentIndex < outerWallLocations.size() - 1) {
-                                nextIndex = currentIndex + 1;
-                            }
-                            if (currentIndex == outerWallLocations.size() - 1) {
-                                nextIndex = 0;
-                            }
-                            if (Math.abs(rc.senseElevation(outerWallLocations.get(nextIndex)) - myHeight) > 3) {
-                                myState = landscaperState.BUILDINGOUTERWALL;
-                                break;
-                            }
+                            nextIndex = getNextIndex(myLoc);
                             Direction move_dir = myLoc.directionTo(outerWallLocations.get(nextIndex));
                             if (rc.canMove(move_dir) && !rc.senseFlooding(myLoc.add(move_dir))) {
                                 rc.move(move_dir);
                                 myState = landscaperState.BUILDINGOUTERWALL;
+                                System.out.println("CAN MOVE TO NEXT WALL STEP 2");
+                                break;
                             }
-
                         }
                         break;
 
 
                     case BUILDINGOUTERWALL:
+                        myLoc = rc.getLocation();
+                        myHeight = rc.senseElevation(myLoc);
                         System.out.println(myState);
                         //check next step;
+                        nextIndex = 0;
                         if (rc.getDirtCarrying() == 0) {
                             getDirt(myLoc);
                         }
-                        int currentIndex = outerWallLocations.indexOf(myLoc);
-                        int nextIndex = 0;
-                        if (currentIndex < outerWallLocations.size() - 1) {
-                            nextIndex = currentIndex + 1;
-                        }
-                        if (currentIndex == outerWallLocations.size() - 1) {
-                            nextIndex = 0;
-                        }
+                        nextIndex = getNextIndex(myLoc);
 
-                        if (rc.senseElevation(outerWallLocations.get(nextIndex)) - myHeight > 3) {
+
+                        if (rc.senseElevation(outerWallLocations.get(nextIndex)) - myHeight >= 3) {
                             //add to my location till ok
                             if (rc.canDepositDirt(Direction.CENTER)) {
                                 if (rc.isReady()) {
                                     rc.depositDirt(Direction.CENTER);
                                     myState = landscaperState.MOVINGONOUTERWALL;
+                                    break;
                                 }
                             }
                         }
-                        if (rc.senseElevation(outerWallLocations.get(nextIndex)) - myHeight <= 3) {
+                        if (rc.senseElevation(outerWallLocations.get(nextIndex)) - myHeight < 3) {
                             //add to next location till ok
                             if (rc.canDepositDirt(myLoc.directionTo(outerWallLocations.get(nextIndex)))) {
                                 if (rc.isReady()) {
                                     rc.depositDirt(myLoc.directionTo(outerWallLocations.get(nextIndex)));
                                     myState = landscaperState.MOVINGONOUTERWALL;
+                                    break;
                                 }
                             }
                         }
@@ -148,14 +142,7 @@ public class Landscaper2 extends RobotPlayer {
                             myState = landscaperState.TRAVELINGINNERWALL;
                         }
                         if (innerWallLocations.contains(myLoc)) {
-                            currentIndex = innerWallLocations.indexOf(myLoc);
-                            nextIndex = 0;
-                            if (currentIndex < innerWallLocations.size() - 1) {
-                                nextIndex = currentIndex + 1;
-                            }
-                            if (currentIndex == innerWallLocations.size() - 1) {
-                                nextIndex = 0;
-                            }
+                            nextIndex = getNextIndex(myLoc);
                             if (Math.abs(rc.senseElevation(innerWallLocations.get(nextIndex)) - myHeight) > 3) {
                                 myState = landscaperState.BUILDINGINNERWALL;
                                 break;
@@ -175,32 +162,23 @@ public class Landscaper2 extends RobotPlayer {
                         if (rc.getDirtCarrying() == 0) {
                             getDirt(myLoc);
                         }
-                        currentIndex = innerWallLocations.indexOf(myLoc);
-                        nextIndex = 0;
-                        if (currentIndex < innerWallLocations.size() - 1) {
-                            nextIndex = currentIndex + 1;
-                        }
-                        if (currentIndex == innerWallLocations.size() - 1) {
-                            nextIndex = 0;
-                        }
+                        nextIndex = getNextIndex(myLoc);
 
-                        if (rc.senseElevation(innerWallLocations.get(nextIndex)) - myHeight > 3) {
+                        if (rc.senseElevation(innerWallLocations.get(nextIndex)) - myHeight >= 3) {
                             //add to my location till ok
                             if (rc.canDepositDirt(Direction.CENTER)) {
                                 if (rc.isReady()) {
                                     rc.depositDirt(Direction.CENTER);
                                     myState = landscaperState.MOVINGINNERWALL;
-                                    System.out.println("INNER WALL MOVE1");
                                 }
                             }
                         }
-                        if (rc.senseElevation(innerWallLocations.get(nextIndex)) - myHeight <= 3) {
+                        if (rc.senseElevation(innerWallLocations.get(nextIndex)) - myHeight < 3) {
                             //add to next location till ok
                             if (rc.canDepositDirt(myLoc.directionTo(innerWallLocations.get(nextIndex)))) {
                                 if (rc.isReady()) {
                                     rc.depositDirt(myLoc.directionTo(innerWallLocations.get(nextIndex)));
                                     myState = landscaperState.MOVINGINNERWALL;
-                                    System.out.println("INNER WALL MOVE2");
                                 }
                             }
                         }
@@ -241,5 +219,65 @@ public class Landscaper2 extends RobotPlayer {
                 }
             }
         }
+    }
+
+    static int getNextIndex(MapLocation myLoc) {
+        int currentIndex = outerWallLocations.indexOf(myLoc);
+        System.out.println("CURRENT INDEX " + currentIndex);
+        System.out.println("OUTER WALL LENGTH " + outerWallLocations.size());
+        int nextIndex = 0;
+        if (outerWallLocations.size() == 24) {
+            if (movingCounterClockwise) {
+
+                if (currentIndex < outerWallLocations.size() - 1) {
+                    nextIndex = currentIndex + 1;
+                    return nextIndex;
+                }
+                if (currentIndex == outerWallLocations.size() - 1) {
+                    nextIndex = 0;
+                    return nextIndex;
+                }
+            }
+            if (movingClockwise) {
+
+                if (currentIndex == 0) {
+                    nextIndex = outerWallLocations.size()-1;
+                    System.out.println("NEXT INDEX 1" + nextIndex);
+                    return nextIndex;
+                }
+                if (currentIndex > 1) {
+                    nextIndex = currentIndex - 1;
+                    System.out.println("NEXT INDEX 2" + nextIndex);
+                    return nextIndex;
+                }
+            }
+        }
+        if (outerWallLocations.size() < 24) {
+            System.out.println("1");
+            currentIndex = outerWallLocations.indexOf(myLoc);
+            if (currentIndex == 0) {
+                System.out.println("2");
+                nextIndex = currentIndex + 1;
+                movingClockwise = true;
+                return nextIndex;
+            }
+            if (currentIndex == outerWallLocations.size() - 1) {
+                System.out.println("3");
+                nextIndex = outerWallLocations.size() - 2;
+                movingClockwise = false;
+                return nextIndex;
+            }
+            if (movingClockwise) {
+                System.out.println("4");
+                nextIndex = currentIndex + 1;
+                return nextIndex;
+            }
+            if (!movingClockwise) {
+                System.out.println("5");
+                nextIndex = currentIndex - 1;
+                return nextIndex;
+            }
+        }
+        return nextIndex;
     }
 }
