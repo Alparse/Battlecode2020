@@ -261,78 +261,77 @@ public class Utility extends RobotPlayer {
         MapLocation search_location23 = new MapLocation(targetLocation.x - 1, targetLocation.y + 2);
         MapLocation search_location24 = new MapLocation(targetLocation.x - 2, targetLocation.y + 2);
 
-        if (rc.onTheMap(search_location1)) {
+
             largeWall.add(search_location1);
-        }
-        if (rc.onTheMap(search_location2)) {
+
+
             largeWall.add(search_location2);
-        }
-        if (rc.onTheMap(search_location3)) {
+
+
             largeWall.add(search_location3);
-        }
-        if (rc.onTheMap(search_location4)) {
+
+
             largeWall.add(search_location4);
-        }
-        if (rc.onTheMap(search_location5)) {
+
+
             largeWall.add(search_location5);
-        }
-        if (rc.onTheMap(search_location6)) {
+
+
             largeWall.add(search_location6);
-        }
-        if (rc.onTheMap(search_location7)) {
+
+
             largeWall.add(search_location7);
-        }
-        if (rc.onTheMap(search_location8)) {
+
+
             largeWall.add(search_location8);
-        }
-        if (rc.onTheMap(search_location9)) {
+
+
             largeWall.add(search_location9);
-        }
-        if (rc.onTheMap(search_location10)) {
+
+
             largeWall.add(search_location10);
-        }
-        if (rc.onTheMap(search_location11)) {
+
+
             largeWall.add(search_location11);
-        }
-        if (rc.onTheMap(search_location12)) {
+
+
             largeWall.add(search_location12);
-        }
-        if (rc.onTheMap(search_location13)) {
+
+
             largeWall.add(search_location13);
-        }
-        if (rc.onTheMap(search_location14)) {
+
+
             largeWall.add(search_location14);
-        }
-        if (rc.onTheMap(search_location15)) {
+
+
             largeWall.add(search_location15);
-        }
-        if (rc.onTheMap(search_location16)) {
+
+
             largeWall.add(search_location16);
-        }
-        if (rc.onTheMap(search_location17)) {
+
+
             largeWall.add(search_location17);
-        }
-        if (rc.onTheMap(search_location18)) {
+
+
             largeWall.add(search_location18);
-        }
-        if (rc.onTheMap(search_location19)) {
+
+
             largeWall.add(search_location19);
-        }
-        if (rc.onTheMap(search_location20)) {
+
+
             largeWall.add(search_location20);
-        }
-        if (rc.onTheMap(search_location21)) {
+
+
             largeWall.add(search_location21);
-        }
-        if (rc.onTheMap(search_location22)) {
+
+
             largeWall.add(search_location22);
-        }
-        if (rc.onTheMap(search_location23)) {
+
+
             largeWall.add(search_location23);
-        }
-        if (rc.onTheMap(search_location24)) {
+
             largeWall.add(search_location24);
-        }
+
 
         return largeWall;
     }

@@ -90,26 +90,26 @@ public class Landscaper2 extends RobotPlayer {
                                 myState = landscaperState.BUILDINGOUTERWALL;
                                 break;
                             }
-                            if(Math.abs(rc.senseElevation(myLoc.add(move_dir)))>myHeight+4||Math.abs(rc.senseElevation(myLoc.add(move_dir)))<myHeight-4){
+                            if (Math.abs(rc.senseElevation(myLoc.add(move_dir))) > myHeight + 4 || Math.abs(rc.senseElevation(myLoc.add(move_dir))) < myHeight - 4) {
 
-                                if(movingClockwise==true){
+                                if (movingClockwise == true) {
 
-                                    movingCounterClockwise=true;
-                                    movingClockwise=false;
-                                    myState=landscaperState.MOVINGONOUTERWALL;
+                                    movingCounterClockwise = true;
+                                    movingClockwise = false;
+                                    myState = landscaperState.MOVINGONOUTERWALL;
                                     break;
                                 }
-                                if(movingClockwise==false){
+                                if (movingClockwise == false) {
 
-                                    movingCounterClockwise=false;
-                                    movingClockwise=true;
-                                    myState=landscaperState.MOVINGONOUTERWALL;
+                                    movingCounterClockwise = false;
+                                    movingClockwise = true;
+                                    myState = landscaperState.MOVINGONOUTERWALL;
                                     break;
                                 }
 
                             }
-                            if(Math.abs(rc.senseElevation(myLoc.add(move_dir)))==myHeight+4||Math.abs(rc.senseElevation(myLoc.add(move_dir)))==myHeight-4){
-                                myState=landscaperState.BUILDINGOUTERWALL;
+                            if (Math.abs(rc.senseElevation(myLoc.add(move_dir))) == myHeight + 4 || Math.abs(rc.senseElevation(myLoc.add(move_dir))) == myHeight - 4) {
+                                myState = landscaperState.BUILDINGOUTERWALL;
                                 break;
                             }
 
@@ -127,16 +127,28 @@ public class Landscaper2 extends RobotPlayer {
                             getDirt(myLoc);
                         }
                         nextIndex = getNextIndex(myLoc);
-                        System.out.println("NEXT INDEX "+nextIndex);
+                        if (movingClockwise && !rc.onTheMap(outerWallLocations.get(nextIndex))) {
+                            movingClockwise = false;
+                            movingCounterClockwise = true;
+                            nextIndex = getNextIndex(myLoc);
+                            System.out.println("133");
+                        }
+                        if (movingCounterClockwise && !rc.onTheMap(outerWallLocations.get(nextIndex))) {
+                            movingClockwise = true;
+                            movingCounterClockwise = false;
+                            nextIndex = getNextIndex(myLoc);
+                            System.out.println("139");
+                        }
+
+                        //nextIndex = getNextIndex(myLoc);
+                        System.out.println("NEXT INDEX " + nextIndex);
 
                         System.out.println(outerWallLocations.get(nextIndex));
 
 
-
-
                         if (rc.senseFlooding((outerWallLocations.get(nextIndex)))) {
 
-                            if (rc.senseElevation(myLoc.add(myLoc.directionTo(outerWallLocations.get(nextIndex))))<-50) {
+                            if (rc.senseElevation(myLoc.add(myLoc.directionTo(outerWallLocations.get(nextIndex)))) < -50) {
 
                                 myState = landscaperState.MOVINGINNERWALL;
                                 break;
@@ -150,9 +162,9 @@ public class Landscaper2 extends RobotPlayer {
                             }
                         }
                         if (rc.senseFlooding(myLoc.add(myLoc.directionTo(hqLoc)))) {
-                            if (rc.senseElevation(myLoc.add(myLoc.directionTo(hqLoc)))<-50) {
+                            if (rc.senseElevation(myLoc.add(myLoc.directionTo(hqLoc))) < -50) {
 
-                                myState=landscaperState.MOVINGINNERWALL;
+                                myState = landscaperState.MOVINGINNERWALL;
                                 break;
                             }
 
@@ -282,30 +294,30 @@ public class Landscaper2 extends RobotPlayer {
 
     static void getDirt(MapLocation myLoc) throws GameActionException {
         System.out.println(digLocations);
-        myLoc=rc.getLocation();
-        if(rc.isReady()){
-        for (MapLocation digLoc : digLocations) {
-            System.out.println("DIGLOC" + digLoc);
-            if (myLoc.isAdjacentTo(digLoc)) {
-                System.out.println("USED DIGLOC " + digLoc);
-                if (rc.canDigDirt(myLoc.directionTo(digLoc))) {
-                    rc.digDirt(myLoc.directionTo(digLoc));
-                    System.out.println("DUG AT " + digLoc);
-                    return;
+        myLoc = rc.getLocation();
+        if (rc.isReady()) {
+            for (MapLocation digLoc : digLocations) {
+                System.out.println("DIGLOC" + digLoc);
+                if (myLoc.isAdjacentTo(digLoc)) {
+                    System.out.println("USED DIGLOC " + digLoc);
+                    if (rc.canDigDirt(myLoc.directionTo(digLoc))) {
+                        rc.digDirt(myLoc.directionTo(digLoc));
+                        System.out.println("DUG AT " + digLoc);
+                        return;
+                    }
                 }
             }
-        }
         }
     }
 
     static int getNextIndex(MapLocation myLoc) {
+        myLoc = rc.getLocation();
         int currentIndex = outerWallLocations.indexOf(myLoc);
-        System.out.println(("CURRENT INDEX "+currentIndex));
+        System.out.println(("CURRENT INDEX " + currentIndex));
 
         int nextIndex = 0;
-        if (outerWallLocations.size() == 24) {
+        if (outerWallLocations.size() <= 24) {
             if (movingCounterClockwise) {
-
 
                 if (currentIndex < outerWallLocations.size() - 1) {
                     nextIndex = currentIndex + 1;
@@ -320,48 +332,15 @@ public class Landscaper2 extends RobotPlayer {
 
 
                 if (currentIndex == 0) {
-                    nextIndex = outerWallLocations.size()-1;
+                    nextIndex = outerWallLocations.size() - 1;
 
                     return nextIndex;
                 }
                 if (currentIndex > 1) {
-                    nextIndex = currentIndex -1;
+                    nextIndex = currentIndex - 1;
 
                     return nextIndex;
                 }
-            }
-        }
-        if (outerWallLocations.size() < 24) {
-
-            currentIndex = outerWallLocations.indexOf(myLoc);
-            System.out.println("CURRENT INDEX 2 "+currentIndex);
-            System.out.println("SIZE OF INDEX "+outerWallLocations.size());
-            System.out.println("1");
-            System.out.println("Moving Clockwise "+movingClockwise);
-            System.out.println("Moving CounterClockwise "+movingCounterClockwise);
-            if (currentIndex == 0) {
-                System.out.println("2");
-                nextIndex = currentIndex + 1;
-                movingClockwise = true;
-                movingCounterClockwise=false;
-                return nextIndex;
-            }
-            if (currentIndex == outerWallLocations.size() - 1) {
-                System.out.println("3");
-                nextIndex = outerWallLocations.size() - 2;
-                movingClockwise = false;
-                movingCounterClockwise=true;
-                return nextIndex;
-            }
-            if (movingClockwise) {
-                System.out.println("4");
-                nextIndex = currentIndex + 1;
-                return nextIndex;
-            }
-            if (movingCounterClockwise) {
-                System.out.println("5");
-                nextIndex = currentIndex - 1;
-                return nextIndex;
             }
         }
         return nextIndex;
