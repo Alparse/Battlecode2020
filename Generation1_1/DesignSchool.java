@@ -9,51 +9,42 @@ import java.util.PriorityQueue;
 
 public class DesignSchool extends RobotPlayer {
     static RobotController rc = RobotPlayer.rc;
-    static int landscapers_built=0;
+    static int landscapers_built = 0;
 
     static void runDesignSchool() throws GameActionException {
-
-        if (landscapers_built < 3||(enemylandscapers_Nearby()>0&&landscapers_built<8)) {
-
-            for (Direction dir : directions)
-                if (Utility.tryBuild(RobotType.LANDSCAPER, dir)) {
-                    landscapers_built = landscapers_built + 1;
-                }
-            ;
-            System.out.println("BYTECODES EXECUTED SO FAR 3 " + Clock.getBytecodeNum());
-        }
-
-        if ((landscapers_built < 9) && rc.getRoundNum() > 100) {
-
-            for (Direction dir : directions)
-                if (Utility.tryBuild(RobotType.LANDSCAPER, dir)) {
-                    landscapers_built = landscapers_built + 1;
-                }
-            ;
-            System.out.println("BYTECODES EXECUTED SO FAR 3 " + Clock.getBytecodeNum());
-        }
-    }
-    static int landscapers_Nearby() {
-        int landscapers = 0;
-        RobotInfo[] nearby_Friendlies = rc.senseNearbyRobots(-1, myTeam);
-        for (RobotInfo r : nearby_Friendlies) {
-            if (r.type == RobotType.LANDSCAPER) {
-                landscapers = landscapers + 1;
+        myLoc = rc.getLocation();
+        myHeight = rc.senseElevation(myLoc);
+        friendlyRobots = rc.senseNearbyRobots(-1, myTeam);
+        enemyRobots = rc.senseNearbyRobots(-1, enemyTeam);
+        Utility.friendlyRobotScan();
+        Utility.enemyRobotScan();
+        Communications.checkMessagesQue();
+        Communications.clearMessageQue();
+        Communications.getConstructionStatus();
+        System.out.println(design_centerBuilt + " " + fulfillment_centerBuilt + " " + vaporatorsBuilt);
+        if (rc.getRoundNum() > 50) {
+            if ((landscapers_built < 1 && rc.getTeamSoup() > 200)) {
+                for (Direction dir : directions)
+                    if (Utility.tryBuild(RobotType.LANDSCAPER, dir)) {
+                        RobotInfo built_robot = rc.senseRobotAtLocation(myLoc.add(dir));
+                        Communications.sendLandScaperJob(built_robot.ID, 10, 3);
+                        landscapers_built = landscapers_built + 1;
+                        break;
+                    }
             }
+            if ((design_centerBuilt == 1 && fulfillment_centerBuilt == 1 && vaporatorsBuilt == 2) || rc.getRoundNum() > 300){
 
+                if (landscapers_built < 18 && rc.getTeamSoup() >= 200) {
+                    for (Direction dir : directions)
+                        if (Utility.tryBuild(RobotType.LANDSCAPER, dir)) {
+                            RobotInfo built_robot = rc.senseRobotAtLocation(myLoc.add(dir));
+                            Communications.sendLandScaperJob(built_robot.ID, 10, 3);
+                            landscapers_built = landscapers_built + 1;
+                            break;
+                        }
+                }
+                }
         }
-        return landscapers;
-    }
-    static int enemylandscapers_Nearby() {
-        int landscapers = 0;
-        RobotInfo[] nearby_Friendlies = rc.senseNearbyRobots(-1, enemyTeam);
-        for (RobotInfo r : nearby_Friendlies) {
-            if (r.type == RobotType.LANDSCAPER) {
-                landscapers = landscapers + 1;
-            }
-
-        }
-        return landscapers;
     }
 
 }

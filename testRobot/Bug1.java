@@ -1,10 +1,9 @@
-package Generation1_1;
+package testRobot;
 
-import battlecode.common.*;
-import gnu.trove.impl.sync.TSynchronizedShortByteMap;
-
-import java.util.Random;
-import java.util.zip.DeflaterInputStream;
+import battlecode.common.Direction;
+import battlecode.common.GameActionException;
+import battlecode.common.MapLocation;
+import battlecode.common.RobotController;
 
 
 public class Bug1 extends RobotPlayer {

@@ -1,4 +1,4 @@
-package Generation1_1;
+package testRobot;
 
 import battlecode.common.*;
 
@@ -47,10 +47,6 @@ public strictfp class RobotPlayer {
     static boolean enemyLandscaperNear = false;
     static boolean enemiesNear = false;
     static boolean vaporatorNear = false;
-    static int design_centerBuilt=0;
-    static int fulfillment_centerBuilt=0;
-    static int vaporatorsBuilt=0;
-    static int HQButtonedUp=0;
     static ArrayList<Message_Que> messageQue=new ArrayList<>();
     static ArrayList<MapLocation> largeWall=new ArrayList<>();
 
@@ -70,7 +66,7 @@ public strictfp class RobotPlayer {
 
         // This is the RobotController object. You use it to perform actions from this robot,
         // and to get information on its current status.
-        Generation1_1.RobotPlayer.rc = rc;
+        RobotPlayer.rc = rc;
         turnCount = 0;
         myTeam = rc.getTeam();
         myType = rc.getType();
@@ -118,7 +114,7 @@ public strictfp class RobotPlayer {
                         DesignSchool.runDesignSchool();
                         break;
                     //case FULFILLMENT_CENTER: runFulfillmentCenter(); break;
-                    case LANDSCAPER:         Landscaper2.runLandscaper();        break;
+                    case LANDSCAPER:         Landscaper.runLandscaper();        break;
                     //case DELIVERY_DRONE:     runDeliveryDrone();     break;
                     //case NET_GUN:            runNetGun();            break;
                 }

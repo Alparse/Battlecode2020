@@ -1,10 +1,8 @@
-package Generation1_1;
+package testRobot;
 
 import battlecode.common.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.stream.StreamSupport;
 
 
 public class Miner2 extends RobotPlayer {
@@ -24,11 +22,11 @@ public class Miner2 extends RobotPlayer {
 
     static void runMiner() throws GameActionException {
         mother_Nearby();
-        minerJob=Communications.getMinerJobFromBlockchain();
+        minerJob= Communications.getMinerJobFromBlockchain();
         if (hqLoc == null) {
             Communications.getHqLocFromBlockchain();
         }
-        buildLocations=Utility.buildLocations(hqLoc);
+        buildLocations= Utility.buildLocations(hqLoc);
 
 
         while (true) {

@@ -1,11 +1,7 @@
-package Generation1_1;
+package testRobot;
 
 import battlecode.common.*;
-import gnu.trove.impl.sync.TSynchronizedShortByteMap;
 
-import javax.swing.*;
-import java.awt.*;
-import java.sql.Driver;
 import java.util.ArrayList;
 
 
@@ -25,7 +21,6 @@ public class Landscaper extends RobotPlayer {
     static ArrayList<MapLocation> digLocations = null;
     static ArrayList<MapLocation> outerWallLocations = null;
     static boolean started_terraforming = false;
-    static MapLocation lastLoc=null;
 
 
     static void runLandscaper() throws GameActionException {
@@ -41,7 +36,7 @@ public class Landscaper extends RobotPlayer {
         myLoc = rc.getLocation();
         myHeight = rc.senseElevation(myLoc);
         digLocations = Utility.digLocations(hqLoc);
-        outerWallLocations=Utility.outerWallArray(hqLoc);
+        outerWallLocations= Utility.outerWallArray(hqLoc);
         mother_Nearby();
 
         while (true) {
@@ -75,26 +70,13 @@ public class Landscaper extends RobotPlayer {
                         System.out.println("HQ WALLED OFF");
                         if (Utility.isOnOuterWallPost(hqLoc, myLoc)) {
                             System.out.println("ON OUTER  WALL");
-
                             if (rc.isReady() && rc.getDirtCarrying() == 0) {
                                 for (Direction dir : directions)
                                     if (Utility.isDigLocation(hqLoc, myLoc.add(dir)))
                                         rc.digDirt(dir);
 
                             }
-
-                            if(rc.getDirtCarrying()==0&&rc.getRoundNum()>200&&rc.getRoundNum()<=1000){
-
-                                for (MapLocation nextLocation:outerWallLocations){
-                                    if (rc.canMove(myLoc.directionTo(nextLocation))&&lastLoc!=nextLocation){
-                                        rc.move(myLoc.directionTo(nextLocation));
-                                        lastLoc=myLoc.add(myLoc.directionTo(nextLocation));
-                                    }
-                                }
-                            }
-
-
-                            if (rc.getDirtCarrying() > 0 && rc.getRoundNum() > 500) {
+                            if (rc.getDirtCarrying() > 0 && rc.getRoundNum() > 250) {
                                 //Direction deposit_dir = dirtScan();
                                 Direction deposit_dir = null;
                                 int min_height = 9999;

@@ -1,10 +1,8 @@
-package Generation1_1;
+package testRobot;
 
 import battlecode.common.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.stream.StreamSupport;
 
 
 public class Miner3 extends RobotPlayer {
@@ -53,16 +51,10 @@ public class Miner3 extends RobotPlayer {
                 enemyRobots = rc.senseNearbyRobots(-1, enemyTeam);
                 Utility.friendlyRobotScan();
                 Utility.enemyRobotScan();
-                Communications.checkMessagesQue();
-                Communications.clearMessageQue();
 
-                if (rc.getRoundNum()>200&&minerJob!=1){
+                if (rc.getRoundNum()>200){
                     rc.disintegrate();
                 }
-                if ((rc.getRoundNum()>200&&minerJob==1&&vaporatorsBuilt==2)||rc.getRoundNum()>500){
-                    rc.disintegrate();
-                }
-
                 if (minerJob == 1) {
                     System.out.println("I AM A CONSTRUCTOR " + (myLoc.distanceSquaredTo(hqLoc)));
                     if (!designCenterBuilt) {
@@ -74,9 +66,7 @@ public class Miner3 extends RobotPlayer {
                                             rc.buildRobot(RobotType.DESIGN_SCHOOL, myLoc.directionTo(buildLoc));
                                             designCenterNear = true;
                                             designCenterBuilt = true;
-                                            design_centerBuilt=1;
                                             minerJob = 1;
-                                            Communications.constructionStatus(3,design_centerBuilt,fulfillment_centerBuilt,vaporatorsBuilt);
                                             break;
                                         }
                                     }
@@ -94,8 +84,7 @@ public class Miner3 extends RobotPlayer {
                                             designCenterNear = true;
                                             designCenterBuilt = true;
                                             fulfillmentCenterBuilt=true;
-                                            fulfillment_centerBuilt=1;
-                                            Communications.constructionStatus(3,design_centerBuilt,fulfillment_centerBuilt,vaporatorsBuilt);
+
 
                                             minerJob = 1;
                                             break;
@@ -116,8 +105,8 @@ public class Miner3 extends RobotPlayer {
                                             designCenterNear = true;
                                             designCenterBuilt = true;
                                             vaporatorsBuilt=vaporatorsBuilt+1;
+
                                             minerJob = 1;
-                                            Communications.constructionStatus(3,design_centerBuilt,fulfillment_centerBuilt,vaporatorsBuilt);
                                             break;
                                         }
                                     }
@@ -136,7 +125,6 @@ public class Miner3 extends RobotPlayer {
                                 }
                             }
                         }
-
                 }
 
                 if (minerJob == 0) {
