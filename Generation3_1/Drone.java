@@ -52,14 +52,29 @@ public class Drone extends RobotPlayer {
                     case DRONING:
                         System.out.println("DRONING");
                         pickupEnemy();
-                        if(!rc.isCurrentlyHoldingUnit()) {
+
+                        if (rc.isCurrentlyHoldingUnit()){
+                            Direction move_dir= myLoc.directionTo(swarmCenter).opposite();
+                            if (rc.senseFlooding(myLoc)||myLoc.distanceSquaredTo(swarmCenter)>100){
+                                if (rc.isReady()){
+                                    for(Direction dir:directions) {
+                                        if (rc.canDropUnit(dir)) {
+                                            rc.dropUnit(dir);
+                                        }
+                                    }
+                                }
+                            }
+                            makeMove(move_dir);
+                        }
+                        if(!rc.isCurrentlyHoldingUnit()&&!myLoc.isAdjacentTo(hqLoc)) {
                             Direction move_dir = myLoc.directionTo(swarmCenter);
                             makeMove(move_dir);
                         }
-                        if (rc.isCurrentlyHoldingUnit()){
-                            Direction move_dir= myLoc.directionTo(hqLoc);
+                        if(!rc.isCurrentlyHoldingUnit()&&myLoc.isAdjacentTo(hqLoc)) {
+                            Direction move_dir = randomDirection();
                             makeMove(move_dir);
                         }
+
                         break;
 
                     case HUNTING:

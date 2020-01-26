@@ -36,11 +36,11 @@ public class Landscaper2 extends RobotPlayer {
         digLocations = Utility.digLocations(hqLoc);
         outerWallLocations = Utility.outerWallArray(hqLoc);
         innerWallLocations = Utility.innerWallArray(hqLoc);
-        if(landScaperJob==10){
-            myState=landscaperState.TRAVELINGOUTERWALL;
+        if (landScaperJob == 10) {
+            myState = landscaperState.TRAVELINGOUTERWALL;
         }
-        if(landScaperJob==11){
-            myState=landscaperState.TRAVELINGINNERWALL;
+        if (landScaperJob == 11) {
+            myState = landscaperState.TRAVELINGINNERWALL;
         }
 
 
@@ -52,7 +52,6 @@ public class Landscaper2 extends RobotPlayer {
                 enemyRobots = rc.senseNearbyRobots(-1, enemyTeam);
                 Utility.friendlyRobotScan();
                 Utility.enemyRobotScan();
-
 
 
                 switch (myState) {
@@ -75,48 +74,68 @@ public class Landscaper2 extends RobotPlayer {
                         int nextIndex = 0;
                         System.out.println(myState);
                         if (!outerWallLocations.contains(myLoc)) {
+                            System.out.println("1");
                             myState = landscaperState.TRAVELINGOUTERWALL;
                             break;
                         }
 
                         if (outerWallLocations.contains(myLoc)) {
                             nextIndex = getNextIndex(myLoc);
+                            System.out.println("2");
                             System.out.println(outerWallLocations);
                             Direction move_dir = myLoc.directionTo(outerWallLocations.get(nextIndex));
+
+                            if(rc.senseElevation(myLoc.add(move_dir))<myHeight){
+                                myState=landscaperState.BUILDINGOUTERWALL;
+                                break;
+                            }
+
+                            if (movingClockwise && rc.senseRobotAtLocation(myLoc.add(move_dir)) != null) {
+                                System.out.println("3");
+                                movingClockwise = false;
+                                movingCounterClockwise = true;
+                            } else {
+                                if (!movingClockwise && rc.senseRobotAtLocation(myLoc.add(move_dir)) != null) {
+                                    System.out.println("4");
+                                    movingClockwise = true;
+                                    movingCounterClockwise = false;
+                                }
+                            }
                             if (rc.senseFlooding(myLoc.add(move_dir))) {
+                                System.out.println("5");
                                 myState = landscaperState.BUILDINGOUTERWALL;
 
                                 break;
                             }
                             if (rc.canMove(move_dir) && !rc.senseFlooding(myLoc.add(move_dir))) {
                                 rc.move(move_dir);
+                                System.out.println("6");
                                 myState = landscaperState.BUILDINGOUTERWALL;
                                 break;
                             }
-                            if (Math.abs(rc.senseElevation(myLoc.add(move_dir))) > myHeight + 4 || Math.abs(rc.senseElevation(myLoc.add(move_dir))) < myHeight - 4) {
-
-                                if (movingClockwise == true) {
-
-                                    movingCounterClockwise = true;
-                                    movingClockwise = false;
-                                    myState = landscaperState.MOVINGONOUTERWALL;
-                                    break;
-                                }
-                                if (movingClockwise == false) {
-
-                                    movingCounterClockwise = false;
-                                    movingClockwise = true;
-                                    myState = landscaperState.MOVINGONOUTERWALL;
-                                    break;
-                                }
-
+                            if (movingClockwise && Math.abs(rc.senseElevation(myLoc.add(move_dir))) > myHeight + 4 || Math.abs(rc.senseElevation(myLoc.add(move_dir))) < myHeight - 4) {
+                                System.out.println("7");
+                                movingCounterClockwise = true;
+                                movingClockwise = false;
+                                myState = landscaperState.MOVINGONOUTERWALL;
+                                break;
                             }
+                            if (!movingClockwise && Math.abs(rc.senseElevation(myLoc.add(move_dir))) > myHeight + 4 || Math.abs(rc.senseElevation(myLoc.add(move_dir))) < myHeight - 4) {
+                                System.out.println("8");
+                                movingCounterClockwise = false;
+                                movingClockwise = true;
+                                myState = landscaperState.MOVINGONOUTERWALL;
+                                break;
+                            }
+
                             if (Math.abs(rc.senseElevation(myLoc.add(move_dir))) == myHeight + 4 || Math.abs(rc.senseElevation(myLoc.add(move_dir))) == myHeight - 4) {
                                 myState = landscaperState.BUILDINGOUTERWALL;
+                                System.out.println("9");
                                 break;
                             }
 
                         }
+                        System.out.println("10");
                         break;
 
 
@@ -140,6 +159,25 @@ public class Landscaper2 extends RobotPlayer {
                             movingClockwise = true;
                             movingCounterClockwise = false;
                             nextIndex = getNextIndex(myLoc);
+
+                        }
+
+                        if (rc.isReady() && rc.senseRobotAtLocation(outerWallLocations.get(nextIndex)) != null) {
+                            if (movingClockwise && !rc.onTheMap(outerWallLocations.get(nextIndex))) {
+                                movingClockwise = false;
+                                movingCounterClockwise = true;
+                                myState = landscaperState.MOVINGONOUTERWALL;
+                                break;
+
+                            }
+                            if (movingCounterClockwise && !rc.onTheMap(outerWallLocations.get(nextIndex))) {
+                                movingClockwise = true;
+                                movingCounterClockwise = false;
+                                myState = landscaperState.MOVINGONOUTERWALL;
+                                break;
+
+                            }
+
 
                         }
 
@@ -214,7 +252,7 @@ public class Landscaper2 extends RobotPlayer {
                             Direction move_dir = Bug1.BugGetNext(myLoc.add(myLoc.directionTo(hqLoc)));
                             Utility.makeMove(move_dir);
                         }
-                        if (myLoc.isAdjacentTo(hqLoc)&&!hqButtonUp(hqLoc)) {
+                        if (myLoc.isAdjacentTo(hqLoc) && !hqButtonUp(hqLoc)) {
                             int nextInnerIndex = getNextInnerIndex(myLoc);
                             if (rc.isReady()) {
                                 if (rc.canMove(myLoc.directionTo(innerWallLocations.get(nextInnerIndex)))) {
@@ -373,19 +411,20 @@ public class Landscaper2 extends RobotPlayer {
 
         return nextIndex;
     }
+
     static boolean hqButtonUp(MapLocation hqLoc) throws GameActionException {
-        int scapers=0;
-        for (Direction dir:directions){
-            if(rc.canSenseLocation(hqLoc.add(dir))){
-                RobotInfo checkBot=rc.senseRobotAtLocation(hqLoc.add(dir));
-                if(checkBot!=null) {
+        int scapers = 0;
+        for (Direction dir : directions) {
+            if (rc.canSenseLocation(hqLoc.add(dir))) {
+                RobotInfo checkBot = rc.senseRobotAtLocation(hqLoc.add(dir));
+                if (checkBot != null) {
                     if (checkBot.type.equals(RobotType.LANDSCAPER)) {
-                        scapers=scapers+1;
+                        scapers = scapers + 1;
                     }
                 }
             }
         }
-        if(scapers==8) {
+        if (scapers == 8) {
             return true;
         }
         return false;

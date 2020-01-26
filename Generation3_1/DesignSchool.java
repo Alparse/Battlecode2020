@@ -28,7 +28,7 @@ public class DesignSchool extends RobotPlayer {
                         break;
                     }
             }
-            if ((design_centerBuilt == 1 && fulfillment_centerBuilt == 1 && vaporatorsBuilt == 2) || rc.getRoundNum() > 300){
+            if ((design_centerBuilt == 1 && fulfillment_centerBuilt == 1 && vaporatorsBuilt == 2) || rc.getRoundNum() > 300||enemiesNear){
 
                 if (landscapers_built < 18 && rc.getTeamSoup() >= 200) {
                     for (Direction dir : directions)
