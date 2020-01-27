@@ -98,9 +98,13 @@ public class Drone extends RobotPlayer {
 
                 switch (myState) {
                     case DRONING:
-                        if(enemyRobots.length>0&&!rc.isCurrentlyHoldingUnit()){
-                            Direction move_dir=myLoc.directionTo(enemyRobots[0].location);
-                            makeMove(move_dir);
+                        if(enemyRobots.length>0&&!rc.isCurrentlyHoldingUnit()) {
+                            for (RobotInfo enemyRobot : enemyRobots) {
+                                if (enemyRobot.type != RobotType.DELIVERY_DRONE) {
+                                    Direction move_dir = myLoc.directionTo(enemyRobot.location);
+                                    makeMove(move_dir);
+                                }
+                            }
                         }
                         pickupEnemy();
 
