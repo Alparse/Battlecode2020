@@ -27,13 +27,14 @@ public class HQ extends RobotPlayer {
         Communications.clearMessageQue();
         HQButtonedUp=HQButtonUpStatus(myLoc);
 
-        if (enemiesNear) {
-            PriorityQueue<Target_Que> myTargets = prioritizeTargets(enemyRobots);
-            while (!myTargets.isEmpty()) {
-                Target_Que myTarget = Objects.requireNonNull(myTargets).poll();
-                if (myTarget.getPriority() <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED) {
-                    if (rc.isReady() && rc.canShootUnit(myTarget.getRobot().ID)) {
-                        rc.shootUnit(myTarget.getRobot().ID);
+        if (enemyRobots.length > 0) {
+            for (RobotInfo robotTarget : enemyRobots) {
+                if (robotTarget.type == RobotType.DELIVERY_DRONE) {
+                    if (myLoc.distanceSquaredTo(robotTarget.location) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED) {
+                        if (rc.isReady() && rc.canShootUnit(robotTarget.ID)) {
+                            rc.shootUnit(robotTarget.ID);
+
+                        }
                     }
                 }
             }

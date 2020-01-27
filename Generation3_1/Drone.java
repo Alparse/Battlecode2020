@@ -15,14 +15,11 @@ public class Drone extends RobotPlayer {
 
     static droneState myState = droneState.DRONING;
     static MapLocation swarmCenter = null;
-    static int swarmGeneration = 0;
-    static boolean enemyHQnear = false;
     static MapLocation enemyHQLoc = null;
-    static boolean rallying = true;
-    static boolean attacking = false;
-    static boolean enemyHQFound = false;
+
     static int hqGuess = 1;
-    static MapLocation enemyHQGuess = null;
+    static int wave=0;
+
 
     static void runDrone() throws GameActionException {
         friendlyRobots = rc.senseNearbyRobots(-1, myTeam);
@@ -34,6 +31,14 @@ public class Drone extends RobotPlayer {
         }
         swarmCenter = hqLoc;
         System.out.println("OUTER SWARM CENTER " + swarmCenter);
+        if(rc.getRoundNum()<800){
+            wave=1;
+        }
+        if(rc.getRoundNum()>=800){
+            wave=2;
+        }
+
+
 
         while (true) {
             try {
@@ -59,12 +64,20 @@ public class Drone extends RobotPlayer {
                 if (hqGuess == 4) {
                     enemyHQLoc = enemyHQLoc;
                 }
-                if (rc.getRoundNum() <= 1500) {
+                if (rc.getRoundNum() <= 800) {
                     swarmCenter = hqLoc;
                 }
-                if (rc.getRoundNum() > 1500) {
-                    swarmCenter = enemyHQLoc;
+                if (rc.getRoundNum() > 800) {
+                    if (wave==1) {
+                        swarmCenter = enemyHQLoc;
+                    }
                 }
+                if (rc.getRoundNum() > 1800) {
+                    if (wave==1 ||wave==2) {
+                        swarmCenter = enemyHQLoc;
+                    }
+                }
+
 
                 System.out.println("SEGMENT 1 ");
 
