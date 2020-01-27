@@ -33,7 +33,7 @@ public class DesignSchool extends RobotPlayer {
                     }
             }
 
-            if ((design_centerBuilt == 1 && fulfillment_centerBuilt == 1 && vaporatorsBuilt == 2) || rc.getRoundNum() > 650||enemyRobots.length>0){
+            if (( vaporatorsBuilt == 2) || rc.getRoundNum() > 650||enemyRobots.length>0){
 
                 if (landscapers_built < 18 && rc.getTeamSoup() >= 200) {
                     for (Direction dir : directions)

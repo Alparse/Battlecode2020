@@ -67,7 +67,7 @@ public class Miner3 extends RobotPlayer {
                         Clock.yield();
                         rc.disintegrate();
                     }
-                    System.out.println("I AM A CONSTRUCTOR " + (myLoc.distanceSquaredTo(hqLoc)));
+
                     if (!designCenterBuilt) {
                         for (MapLocation buildLoc : buildLocations) {
                             if (rc.canSenseLocation(buildLoc)) {
@@ -145,7 +145,7 @@ public class Miner3 extends RobotPlayer {
                         Utility.makeMove(move_dir);
                     }
                     if (myLoc.isAdjacentTo(hqLoc)) {
-                        System.out.println(innerWallLocations);
+
                         int nextInnerIndex = getNextInnerIndex(myLoc);
                         if (rc.isReady()) {
                             if (rc.canMove(myLoc.directionTo(innerWallLocations.get(nextInnerIndex)))) {
@@ -163,7 +163,7 @@ public class Miner3 extends RobotPlayer {
 
                     switch (myState) {
                         case SCANNINGSOUP:
-                            System.out.println(minerState.SCANNINGSOUP);
+
                             if (soupLoc != null) {
                                 myState = minerState.GOINGSOUP;
                                 break;
@@ -187,7 +187,7 @@ public class Miner3 extends RobotPlayer {
                             }
                             break;
                         case SEARCHINGSOUP:
-                            System.out.println(minerState.SEARCHINGSOUP);
+
                             while (!rc.canMove(explore_Dir)) {
                                 explore_Dir = randomDirection();
                             }
@@ -199,7 +199,7 @@ public class Miner3 extends RobotPlayer {
                             myLoc = rc.getLocation();
                             myHeight = rc.senseElevation(myLoc);
                             //scanForRefinery();
-                            System.out.println(minerState.GOINGSOUP);
+
                             if (myLoc.isAdjacentTo(soupLoc) || myLoc == soupLoc) {
                                 myState = minerState.MININGSOUP;
                             } else {
@@ -210,7 +210,7 @@ public class Miner3 extends RobotPlayer {
                             break;
 
                         case MININGSOUP:
-                            System.out.println(minerState.MININGSOUP);
+
                             if (rc.canMineSoup(myLoc.directionTo(soupLoc))) {
                                 if (rc.isReady()) {
                                     rc.mineSoup(myLoc.directionTo(soupLoc));
@@ -229,7 +229,7 @@ public class Miner3 extends RobotPlayer {
                         case RETURNINGSOUP:
                             myLoc = rc.getLocation();
                             myHeight = rc.senseElevation(myLoc);
-                            System.out.println(minerState.RETURNINGSOUP);
+
                             if (myLoc.isAdjacentTo(refineryLock)) {
                                 myState = minerState.DEPOSITINGSOUP;
                                 break;
@@ -258,7 +258,7 @@ public class Miner3 extends RobotPlayer {
                             break;
 
                         case DEPOSITINGSOUP:
-                            System.out.println(minerState.DEPOSITINGSOUP + " at " + refineryLock);
+
                             if (rc.isReady() && rc.canDepositSoup(myLoc.directionTo(refineryLock))) {
                                 rc.depositSoup(myLoc.directionTo(refineryLock), RobotType.MINER.soupLimit);
                             }
@@ -268,7 +268,7 @@ public class Miner3 extends RobotPlayer {
                             break;
 
                         case BUILDINGREFINERY:
-                            System.out.println(minerState.BUILDINGREFINERY);
+
                             if (refineryNear) {
                                 for (RobotInfo r : friendlyRobots) {
                                     if (r.type == RobotType.REFINERY) {

@@ -86,6 +86,19 @@ public class Landscaper2 extends RobotPlayer {
 
                         if (outerWallLocations.contains(myLoc)) {
                             nextIndex = getNextIndex(myLoc);
+                            if (!rc.onTheMap(outerWallLocations.get(nextIndex))) {
+
+                                if (movingClockwise) {
+                                    movingClockwise = false;
+                                    movingCounterClockwise = true;
+                                } else {
+                                    if (!movingClockwise) {
+                                        movingClockwise = true;
+                                        movingCounterClockwise = false;
+                                    }
+                                }
+                                nextIndex = getNextIndex(myLoc);
+                            }
 
 
                             Direction move_dir = myLoc.directionTo(outerWallLocations.get(nextIndex));
@@ -257,7 +270,7 @@ public class Landscaper2 extends RobotPlayer {
                             Direction move_dir = Bug1.BugGetNext(myLoc.add(myLoc.directionTo(hqLoc)));
                             Utility.makeMove(move_dir);
                         }
-                        if (myLoc.isAdjacentTo(hqLoc) && !hqButtonUp(hqLoc)&&rc.getRoundNum()<1000) {
+                        if (myLoc.isAdjacentTo(hqLoc) && !hqButtonUp(hqLoc) && rc.getRoundNum() < 1000) {
                             int nextInnerIndex = getNextInnerIndex(myLoc);
                             if (rc.isReady()) {
                                 if (rc.canMove(myLoc.directionTo(innerWallLocations.get(nextInnerIndex)))) {
@@ -278,7 +291,7 @@ public class Landscaper2 extends RobotPlayer {
                                 }
                             }
                         }
-                        if (hqButtonUp(hqLoc)||rc.getRoundNum()>=1000) {
+                        if (hqButtonUp(hqLoc) || rc.getRoundNum() >= 1000) {
                             if (myLoc.isAdjacentTo(hqLoc)) {
                                 if (rc.getDirtCarrying() == 0) {
                                     getDirt(myLoc);
@@ -334,17 +347,29 @@ public class Landscaper2 extends RobotPlayer {
         myLoc = rc.getLocation();
         if (rc.isReady()) {
             for (MapLocation digLoc : digLocations) {
+                if (rc.onTheMap(digLoc)) {
 
-                if (myLoc.isAdjacentTo(digLoc)) {
+                    if (myLoc.isAdjacentTo(digLoc)) {
 
-                    if (rc.canDigDirt(myLoc.directionTo(digLoc))) {
-                        rc.digDirt(myLoc.directionTo(digLoc));
+                        if (rc.canDigDirt(myLoc.directionTo(digLoc))) {
+                            rc.digDirt(myLoc.directionTo(digLoc));
 
-                        return;
+                            return;
+                        }
                     }
                 }
             }
+            if (movingClockwise) {
+                movingClockwise = false;
+                movingCounterClockwise = true;
+            } else {
+                if (!movingClockwise) {
+                    movingClockwise = true;
+                    movingCounterClockwise = false;
+                }
+            }
         }
+
     }
 
     static int getNextIndex(MapLocation myLoc) {
@@ -447,6 +472,7 @@ public class Landscaper2 extends RobotPlayer {
         }
         return false;
     }
+
     static int getNextInnerIndex(MapLocation myLoc) {
         myLoc = rc.getLocation();
         int nextIndex = 0;
