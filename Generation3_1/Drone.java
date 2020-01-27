@@ -27,14 +27,14 @@ public class Drone extends RobotPlayer {
         if (hqLoc == null) {
             hqLoc = Communications.getHqLocFromBlockchain();
         }
-        if (rc.getRoundNum() < 1000) {
+        if (rc.getRoundNum() < 1500) {
         }
         swarmCenter = hqLoc;
 
-        if(rc.getRoundNum()<800){
+        if(rc.getRoundNum()<1500){
             wave=1;
         }
-        if(rc.getRoundNum()>=800){
+        if(rc.getRoundNum()>=1500){
             wave=2;
         }
 
@@ -64,19 +64,20 @@ public class Drone extends RobotPlayer {
                 if (hqGuess == 4) {
                     enemyHQLoc = enemyHQLoc;
                 }
-                if (rc.getRoundNum() <= 800) {
+                if (rc.getRoundNum() <= 1500) {
                     swarmCenter = hqLoc;
                 }
-                if (rc.getRoundNum() > 800) {
+                if (rc.getRoundNum() > 1500) {
                     if (wave==1) {
                         swarmCenter = enemyHQLoc;
                     }
                 }
-                if (rc.getRoundNum() > 1800) {
+                if (rc.getRoundNum() > 2200) {
                     if (wave==1 ||wave==2) {
                         swarmCenter = enemyHQLoc;
                     }
                 }
+
 
 
 
