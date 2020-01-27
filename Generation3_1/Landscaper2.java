@@ -58,6 +58,10 @@ public class Landscaper2 extends RobotPlayer {
 
                     case TRAVELINGOUTERWALL:
                         System.out.println(myState);
+                        if(rc.getRoundNum()>300&&innerWallLocations.contains(myLoc)){
+                            myState=landscaperState.TRAVELINGINNERWALL;
+                            break;
+                        }
                         if (outerWallLocations.contains(myLoc)) {
                             myState = landscaperState.MOVINGONOUTERWALL;
                             break;

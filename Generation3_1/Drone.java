@@ -16,6 +16,13 @@ public class Drone extends RobotPlayer {
     static droneState myState = droneState.DRONING;
     static MapLocation swarmCenter = null;
     static int swarmGeneration = 0;
+    static boolean enemyHQnear = false;
+    static MapLocation enemyHQLoc = null;
+    static boolean rallying = true;
+    static boolean attacking = false;
+    static boolean enemyHQFound = false;
+    static int hqGuess = 1;
+    static MapLocation enemyHQGuess = null;
 
     static void runDrone() throws GameActionException {
         friendlyRobots = rc.senseNearbyRobots(-1, myTeam);
@@ -23,7 +30,7 @@ public class Drone extends RobotPlayer {
         if (hqLoc == null) {
             hqLoc = Communications.getHqLocFromBlockchain();
         }
-        if(rc.getRoundNum()<1000){
+        if (rc.getRoundNum() < 1000) {
         }
         swarmCenter = hqLoc;
         System.out.println("OUTER SWARM CENTER " + swarmCenter);
@@ -39,24 +46,42 @@ public class Drone extends RobotPlayer {
                 Communications.checkMessagesQue();
                 Communications.clearMessageQue();
 
-                if (rc.getRoundNum() == 1100) {
-                    swarmCenter = Utility.enemyXSymmetric(hqLoc);
-                    System.out.println("SWARDM CENT 1"+swarmCenter+" HQ LOC "+hqLoc);
-                    myState=droneState.DRONING;
+
+                if (hqGuess == 1) {
+                    enemyHQLoc = Utility.enemyYSymmetric(hqLoc);
+                }
+                if (hqGuess == 2) {
+                    enemyHQLoc = Utility.enemyXYSymmetric(hqLoc);
+                }
+                if (hqGuess == 3) {
+                    enemyHQLoc = Utility.enemyXSymmetric(hqLoc);
+                }
+                if (hqGuess == 4) {
+                    enemyHQLoc = enemyHQLoc;
+                }
+                if (rc.getRoundNum() <= 1500) {
+                    swarmCenter = hqLoc;
+                }
+                if (rc.getRoundNum() > 1500) {
+                    swarmCenter = enemyHQLoc;
                 }
 
-                if (rc.getRoundNum() == 1300) {
-                    swarmCenter = Utility.enemyXYSymmetric(hqLoc);
-                    System.out.println("SWARDM CENT 2"+ swarmCenter);
-                    myState=droneState.DRONING;
+                System.out.println("SEGMENT 1 ");
+
+                if (myLoc.distanceSquaredTo(enemyHQLoc) < RobotType.DELIVERY_DRONE.sensorRadiusSquared) {
+                    if (rc.canSenseLocation(enemyHQLoc)) {
+                        if (rc.senseRobotAtLocation(enemyHQLoc) != null) {
+                            if (rc.senseRobotAtLocation(enemyHQLoc).type != RobotType.HQ) {
+                                hqGuess = hqGuess + 1;
+                            }
+                            if (rc.senseRobotAtLocation(enemyHQLoc).type == RobotType.HQ) {
+                                hqGuess = 4;
+
+                            }
+                        }
+                    }
                 }
 
-
-                if (rc.getRoundNum() == 1500) {
-                    swarmCenter = Utility.enemyYSymmetric(hqLoc);
-                    System.out.println("SWARDM CENT 3"+swarmCenter);
-                    myState=droneState.DRONING;
-                }
 
                 System.out.println("INNER SWARM CENTER " + swarmCenter);
                 switch (myState) {
@@ -95,8 +120,6 @@ public class Drone extends RobotPlayer {
                             Direction move_dir = myLoc.directionTo(swarmCenter);
                             makeMove(move_dir);
                         }
-
-
 
 
                         break;
