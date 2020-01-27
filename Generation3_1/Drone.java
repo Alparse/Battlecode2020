@@ -39,20 +39,20 @@ public class Drone extends RobotPlayer {
                 Communications.checkMessagesQue();
                 Communications.clearMessageQue();
 
-                if (rc.getRoundNum() >= 1300) {
+                if (rc.getRoundNum() == 1100) {
                     swarmCenter = Utility.enemyXSymmetric(hqLoc);
                     System.out.println("SWARDM CENT 1"+swarmCenter+" HQ LOC "+hqLoc);
                     myState=droneState.DRONING;
                 }
 
-                if (rc.getRoundNum() == 1600) {
+                if (rc.getRoundNum() == 1300) {
                     swarmCenter = Utility.enemyXYSymmetric(hqLoc);
                     System.out.println("SWARDM CENT 2"+ swarmCenter);
                     myState=droneState.DRONING;
                 }
 
 
-                if (rc.getRoundNum() == 1900) {
+                if (rc.getRoundNum() == 1500) {
                     swarmCenter = Utility.enemyYSymmetric(hqLoc);
                     System.out.println("SWARDM CENT 3"+swarmCenter);
                     myState=droneState.DRONING;
