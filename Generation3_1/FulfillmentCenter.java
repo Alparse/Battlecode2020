@@ -18,7 +18,7 @@ public class FulfillmentCenter extends RobotPlayer {
         Communications.clearMessageQue();
         Communications.getConstructionStatus();
         System.out.println(design_centerBuilt + " " + fulfillment_centerBuilt + " " + vaporatorsBuilt);
-        if (rc.getRoundNum() > 700||enemiesNear) {
+        if (rc.getRoundNum() > 500||enemiesNear) {
             for (Direction dir : directions)
                 if (Utility.tryBuild(RobotType.DELIVERY_DRONE, dir)) {
                     RobotInfo built_robot = rc.senseRobotAtLocation(myLoc.add(dir));
@@ -30,5 +30,6 @@ public class FulfillmentCenter extends RobotPlayer {
         }
 
     }
+
 
 }

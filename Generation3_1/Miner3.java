@@ -22,6 +22,7 @@ public class Miner3 extends RobotPlayer {
     static int minerJob = 0;
     static MapLocation lastSoupLoc = null;
     static ArrayList<MapLocation> buildLocations = null;
+    static ArrayList<MapLocation> innerWallLocations = null;
 
 
     enum minerState {SCANNINGSOUP, SEARCHINGSOUP, GOINGSOUP, MININGSOUP, RETURNINGSOUP, DEPOSITINGSOUP, BUILDINGREFINERY}
@@ -41,6 +42,7 @@ public class Miner3 extends RobotPlayer {
         }
         System.out.println("MY JOB IS " + minerJob);
         buildLocations = Utility.buildLocations(hqLoc);
+        innerWallLocations = Utility.innerWallArray(hqLoc);
 
         while (true) {
             try {
@@ -54,14 +56,17 @@ public class Miner3 extends RobotPlayer {
                 Communications.checkMessagesQue();
                 Communications.clearMessageQue();
 
-                if (rc.getRoundNum()>200&&minerJob!=1){
+                if (rc.getRoundNum() > 300 && minerJob != 1) {
                     rc.disintegrate();
                 }
-                if ((rc.getRoundNum()>200&&minerJob==1&&vaporatorsBuilt==2)||rc.getRoundNum()>500){
+                if ((rc.getRoundNum() > 500 && minerJob == 1 && vaporatorsBuilt == 2) || rc.getRoundNum() > 700) {
                     rc.disintegrate();
                 }
 
                 if (minerJob == 1) {
+                    if((designCenterBuilt&&fulfillmentCenterBuilt&&vaporatorsBuilt==2)||rc.getRoundNum()>500) {
+                        rc.disintegrate();
+                    }
                     System.out.println("I AM A CONSTRUCTOR " + (myLoc.distanceSquaredTo(hqLoc)));
                     if (!designCenterBuilt) {
                         for (MapLocation buildLoc : buildLocations) {
@@ -72,9 +77,9 @@ public class Miner3 extends RobotPlayer {
                                             rc.buildRobot(RobotType.DESIGN_SCHOOL, myLoc.directionTo(buildLoc));
                                             designCenterNear = true;
                                             designCenterBuilt = true;
-                                            design_centerBuilt=1;
+                                            design_centerBuilt = 1;
                                             minerJob = 1;
-                                            Communications.constructionStatus(3,design_centerBuilt,fulfillment_centerBuilt,vaporatorsBuilt);
+                                            Communications.constructionStatus(3, design_centerBuilt, fulfillment_centerBuilt, vaporatorsBuilt);
                                             break;
                                         }
                                     }
@@ -91,9 +96,9 @@ public class Miner3 extends RobotPlayer {
                                             rc.buildRobot(RobotType.FULFILLMENT_CENTER, myLoc.directionTo(buildLoc));
                                             designCenterNear = true;
                                             designCenterBuilt = true;
-                                            fulfillmentCenterBuilt=true;
-                                            fulfillment_centerBuilt=1;
-                                            Communications.constructionStatus(3,design_centerBuilt,fulfillment_centerBuilt,vaporatorsBuilt);
+                                            fulfillmentCenterBuilt = true;
+                                            fulfillment_centerBuilt = 1;
+                                            Communications.constructionStatus(3, design_centerBuilt, fulfillment_centerBuilt, vaporatorsBuilt);
 
                                             minerJob = 1;
                                             break;
@@ -103,19 +108,19 @@ public class Miner3 extends RobotPlayer {
                             }
                         }
                     }
-                    if (designCenterBuilt && fulfillmentCenterBuilt&&vaporatorsBuilt<2) {
+                    if (designCenterBuilt && fulfillmentCenterBuilt && vaporatorsBuilt < 2) {
                         for (MapLocation buildLoc : buildLocations) {
                             if (rc.canSenseLocation(buildLoc)) {
-                                System.out.println("SENSING BUILD LOC "+buildLoc);
+                                System.out.println("SENSING BUILD LOC " + buildLoc);
                                 if (rc.senseRobotAtLocation(buildLoc) == null) {
                                     if (myLoc.isAdjacentTo(buildLoc)) {
                                         if (rc.isReady() & rc.canBuildRobot(RobotType.VAPORATOR, myLoc.directionTo(buildLoc))) {
                                             rc.buildRobot(RobotType.VAPORATOR, myLoc.directionTo(buildLoc));
                                             designCenterNear = true;
                                             designCenterBuilt = true;
-                                            vaporatorsBuilt=vaporatorsBuilt+1;
+                                            vaporatorsBuilt = vaporatorsBuilt + 1;
                                             minerJob = 1;
-                                            Communications.constructionStatus(3,design_centerBuilt,fulfillment_centerBuilt,vaporatorsBuilt);
+                                            Communications.constructionStatus(3, design_centerBuilt, fulfillment_centerBuilt, vaporatorsBuilt);
                                             break;
                                         }
                                     }
@@ -124,17 +129,30 @@ public class Miner3 extends RobotPlayer {
                         }
                     }
 
-                    if (!designCenterBuilt || !fulfillmentCenterBuilt || vaporatorsBuilt <2)
-                        for (MapLocation buildLoc : buildLocations) {
-                            if (rc.canSenseLocation(buildLoc)&&!myLoc.isAdjacentTo(buildLoc)) {
-                                if (rc.senseRobotAtLocation(buildLoc) == null) {
-                                    Direction move_dir = Bug1.BugGetNext(buildLoc);
-                                    makeMove(move_dir);
-                                    System.out.println("MADE MOVE ");
-                                }
+                    //if (!designCenterBuilt || !fulfillmentCenterBuilt || vaporatorsBuilt < 2)
+                       // for (MapLocation buildLoc : buildLocations) {
+                            //if (rc.canSenseLocation(buildLoc) && !myLoc.isAdjacentTo(buildLoc)) {
+                               // if (rc.senseRobotAtLocation(buildLoc) == null) {
+                                   // Direction move_dir = Bug1.BugGetNext(buildLoc);
+                                   // makeMove(move_dir);
+                                   // System.out.println("MADE MOVE ");
+                               // }
+                           // }
+                       //}
+                    if (!myLoc.isAdjacentTo(hqLoc)) {
+                        Direction move_dir = Bug1.BugGetNext(myLoc.add(myLoc.directionTo(hqLoc)));
+                        Utility.makeMove(move_dir);
+                    }
+                    if (myLoc.isAdjacentTo(hqLoc)) {
+                        System.out.println(innerWallLocations);
+                        int nextInnerIndex = getNextInnerIndex(myLoc);
+                        System.out.println("INNER INDEX "+nextInnerIndex);
+                        if (rc.isReady()) {
+                            if (rc.canMove(myLoc.directionTo(innerWallLocations.get(nextInnerIndex)))) {
+                                rc.move(myLoc.directionTo(innerWallLocations.get(nextInnerIndex)));
                             }
                         }
-
+                    }
                 }
 
                 if (minerJob == 0) {
@@ -421,6 +439,18 @@ public class Miner3 extends RobotPlayer {
                 refineryLock = hqLoc;
             }
         }
+    }
+    static int getNextInnerIndex(MapLocation myLoc) {
+        myLoc = rc.getLocation();
+        int currentIndex = innerWallLocations.indexOf(myLoc);
+
+
+        int nextIndex = currentIndex + 1;
+        if (currentIndex == 7) {
+            nextIndex = 0;
+        }
+
+        return nextIndex;
     }
 
 }
