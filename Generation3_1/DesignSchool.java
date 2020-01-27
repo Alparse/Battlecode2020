@@ -18,6 +18,8 @@ public class DesignSchool extends RobotPlayer {
         Communications.clearMessageQue();
         Communications.getConstructionStatus();
         System.out.println(design_centerBuilt + " " + fulfillment_centerBuilt + " " + vaporatorsBuilt);
+
+
         if (rc.getRoundNum() > 50) {
             if ((landscapers_built < 2 && rc.getTeamSoup() > 200)) {
                 for (Direction dir : directions)

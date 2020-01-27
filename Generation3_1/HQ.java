@@ -26,21 +26,7 @@ public class HQ extends RobotPlayer {
         Communications.checkMessagesQue();
         Communications.clearMessageQue();
         HQButtonedUp=HQButtonUpStatus(myLoc);
-        if(rc.getRoundNum()>750){
-            Communications.sendDroneSwarmLoc(Utility.enemyYSymmetric(hqLoc),3);
-        }
-        if(rc.getRoundNum()%20==0) {
-            Communications.HQButtonedUp(1, HQButtonedUp);
-        }
 
-        if(rc.getRoundNum()<5) {
-            Communications.sendHqLoc(myLoc,3);
-        }
-        if(messageQue.size()>0){
-            for(Message_Que m:messageQue) {
-                System.out.println(m.toString());
-            }
-        }
         if (enemiesNear) {
             PriorityQueue<Target_Que> myTargets = prioritizeTargets(enemyRobots);
             while (!myTargets.isEmpty()) {
@@ -81,9 +67,6 @@ public class HQ extends RobotPlayer {
                     break;
                 }
         }
-        System.out.println("ENEMY HQ LOCATION XY SYMM "+ Utility.enemyXYSymmetric(rc.getLocation()));
-        System.out.println("ENEMY HQ LOCATION Y SYMM "+ Utility.enemyYSymmetric(rc.getLocation()));
-        System.out.println("ENEMY HQ LOCATION X SYMM "+ Utility.enemyXSymmetric(rc.getLocation()));
         Clock.yield();
     }
 

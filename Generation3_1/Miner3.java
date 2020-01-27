@@ -56,7 +56,7 @@ public class Miner3 extends RobotPlayer {
                 Communications.checkMessagesQue();
                 Communications.clearMessageQue();
 
-                if (rc.getRoundNum() > 300 && minerJob != 1) {
+                if (rc.getRoundNum() > 200 && minerJob != 1) {
                     rc.disintegrate();
                 }
                 if ((rc.getRoundNum() > 500 && minerJob == 1 && vaporatorsBuilt == 2) || rc.getRoundNum() > 700) {
