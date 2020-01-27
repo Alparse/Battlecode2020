@@ -1,6 +1,7 @@
 package Generation3_1;
 
 import battlecode.common.*;
+import battlecode.world.RobotControllerImpl;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -57,9 +58,9 @@ public class Landscaper2 extends RobotPlayer {
                 switch (myState) {
 
                     case TRAVELINGOUTERWALL:
-                        System.out.println(myState);
-                        if(rc.getRoundNum()>300&&innerWallLocations.contains(myLoc)){
-                            myState=landscaperState.TRAVELINGINNERWALL;
+
+                        if (rc.getRoundNum() > 300 && innerWallLocations.contains(myLoc)) {
+                            myState = landscaperState.TRAVELINGINNERWALL;
                             break;
                         }
                         if (outerWallLocations.contains(myLoc)) {
@@ -76,56 +77,56 @@ public class Landscaper2 extends RobotPlayer {
 
                     case MOVINGONOUTERWALL:
                         int nextIndex = 0;
-                        System.out.println(myState);
+
                         if (!outerWallLocations.contains(myLoc)) {
-                            System.out.println("1");
+
                             myState = landscaperState.TRAVELINGOUTERWALL;
                             break;
                         }
 
                         if (outerWallLocations.contains(myLoc)) {
                             nextIndex = getNextIndex(myLoc);
-                            System.out.println("2");
-                            System.out.println(outerWallLocations);
+
+
                             Direction move_dir = myLoc.directionTo(outerWallLocations.get(nextIndex));
 
-                            if(rc.senseElevation(myLoc.add(move_dir))<myHeight){
-                                myState=landscaperState.BUILDINGOUTERWALL;
+                            if (rc.senseElevation(myLoc.add(move_dir)) < myHeight) {
+                                myState = landscaperState.BUILDINGOUTERWALL;
                                 break;
                             }
 
                             if (movingClockwise && rc.senseRobotAtLocation(myLoc.add(move_dir)) != null) {
-                                System.out.println("3");
+
                                 movingClockwise = false;
                                 movingCounterClockwise = true;
                             } else {
                                 if (!movingClockwise && rc.senseRobotAtLocation(myLoc.add(move_dir)) != null) {
-                                    System.out.println("4");
+
                                     movingClockwise = true;
                                     movingCounterClockwise = false;
                                 }
                             }
                             if (rc.senseFlooding(myLoc.add(move_dir))) {
-                                System.out.println("5");
+
                                 myState = landscaperState.BUILDINGOUTERWALL;
 
                                 break;
                             }
                             if (rc.canMove(move_dir) && !rc.senseFlooding(myLoc.add(move_dir))) {
                                 rc.move(move_dir);
-                                System.out.println("6");
+
                                 myState = landscaperState.BUILDINGOUTERWALL;
                                 break;
                             }
                             if (movingClockwise && Math.abs(rc.senseElevation(myLoc.add(move_dir))) > myHeight + 4 || Math.abs(rc.senseElevation(myLoc.add(move_dir))) < myHeight - 4) {
-                                System.out.println("7");
+
                                 movingCounterClockwise = true;
                                 movingClockwise = false;
                                 myState = landscaperState.MOVINGONOUTERWALL;
                                 break;
                             }
                             if (!movingClockwise && Math.abs(rc.senseElevation(myLoc.add(move_dir))) > myHeight + 4 || Math.abs(rc.senseElevation(myLoc.add(move_dir))) < myHeight - 4) {
-                                System.out.println("8");
+
                                 movingCounterClockwise = false;
                                 movingClockwise = true;
                                 myState = landscaperState.MOVINGONOUTERWALL;
@@ -134,19 +135,19 @@ public class Landscaper2 extends RobotPlayer {
 
                             if (Math.abs(rc.senseElevation(myLoc.add(move_dir))) == myHeight + 4 || Math.abs(rc.senseElevation(myLoc.add(move_dir))) == myHeight - 4) {
                                 myState = landscaperState.BUILDINGOUTERWALL;
-                                System.out.println("9");
+
                                 break;
                             }
 
                         }
-                        System.out.println("10");
+
                         break;
 
 
                     case BUILDINGOUTERWALL:
                         myLoc = rc.getLocation();
                         myHeight = rc.senseElevation(myLoc);
-                        System.out.println(myState);
+
                         //check next step;
                         nextIndex = 0;
                         if (rc.getDirtCarrying() == 0) {
@@ -250,21 +251,34 @@ public class Landscaper2 extends RobotPlayer {
                         break;
 
                     case TRAVELINGINNERWALL:
-                        System.out.println(myState);
+
 
                         if (!myLoc.isAdjacentTo(hqLoc)) {
                             Direction move_dir = Bug1.BugGetNext(myLoc.add(myLoc.directionTo(hqLoc)));
                             Utility.makeMove(move_dir);
                         }
-                        if (myLoc.isAdjacentTo(hqLoc) && !hqButtonUp(hqLoc)) {
+                        if (myLoc.isAdjacentTo(hqLoc) && !hqButtonUp(hqLoc)&&rc.getRoundNum()<1000) {
                             int nextInnerIndex = getNextInnerIndex(myLoc);
                             if (rc.isReady()) {
                                 if (rc.canMove(myLoc.directionTo(innerWallLocations.get(nextInnerIndex)))) {
                                     rc.move(myLoc.directionTo(innerWallLocations.get(nextInnerIndex)));
                                 }
+                                if (myHeight - rc.senseElevation(innerWallLocations.get(nextInnerIndex)) > 3) {
+                                    if (rc.getDirtCarrying() == 0) {
+                                        getDirt(myLoc);
+                                    }
+                                    if (rc.getDirtCarrying() > 0) {
+                                        if (rc.isReady()) {
+                                            if (rc.canDepositDirt(myLoc.directionTo(innerWallLocations.get(nextInnerIndex)))) {
+                                                rc.depositDirt(myLoc.directionTo(innerWallLocations.get(nextInnerIndex)));
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
-                        if (hqButtonUp(hqLoc)) {
+                        if (hqButtonUp(hqLoc)||rc.getRoundNum()>=1000) {
                             if (myLoc.isAdjacentTo(hqLoc)) {
                                 if (rc.getDirtCarrying() == 0) {
                                     getDirt(myLoc);
@@ -403,7 +417,7 @@ public class Landscaper2 extends RobotPlayer {
         return myLoc;
     }
 
-    static int getNextInnerIndex(MapLocation myLoc) {
+    static int getNextInnerIndex2(MapLocation myLoc) {
         myLoc = rc.getLocation();
         int currentIndex = innerWallLocations.indexOf(myLoc);
 
@@ -432,6 +446,33 @@ public class Landscaper2 extends RobotPlayer {
             return true;
         }
         return false;
+    }
+    static int getNextInnerIndex(MapLocation myLoc) {
+        myLoc = rc.getLocation();
+        int nextIndex = 0;
+        int currentIndex = innerWallLocations.indexOf(myLoc);
+        if (movingCounterClockwise) {
+            nextIndex = currentIndex + 1;
+            if (currentIndex == 7) {
+                nextIndex = 0;
+            }
+            if (!rc.canMove(myLoc.directionTo(innerWallLocations.get(nextIndex)))) {
+                movingCounterClockwise = false;
+                movingClockwise = true;
+            }
+        }
+        if (movingClockwise) {
+            nextIndex = currentIndex - 1;
+            if (currentIndex == 0) {
+                nextIndex = 7;
+            }
+            if (!rc.canMove(myLoc.directionTo(innerWallLocations.get(nextIndex)))) {
+                movingCounterClockwise = true;
+                movingClockwise = false;
+            }
+        }
+
+        return nextIndex;
     }
 
 }

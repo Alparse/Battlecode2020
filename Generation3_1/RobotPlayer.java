@@ -8,7 +8,7 @@ public strictfp class RobotPlayer {
     static RobotController rc;
 
     static Direction[] directions = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.NORTHEAST, Direction.NORTHWEST, Direction.SOUTHEAST, Direction.SOUTHWEST};
-    static Direction[] leveeDirections = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.NORTHEAST, Direction.NORTHWEST, Direction.SOUTHEAST, Direction.SOUTHWEST,Direction.CENTER};
+    static Direction[] leveeDirections = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.NORTHEAST, Direction.NORTHWEST, Direction.SOUTHEAST, Direction.SOUTHWEST, Direction.CENTER};
 
     static int turnCount;
     static Team myTeam = null;
@@ -30,14 +30,14 @@ public strictfp class RobotPlayer {
     static enum BugPathState {HUGRIGHT, HUGLEFT, NONE}
 
     static BugPathState bugPathState = null;
-    static MapLocation bugEntry=null;
-    static MapLocation lastBugEntry=null;
-    static BugPathState lastBugState=null;
+    static MapLocation bugEntry = null;
+    static MapLocation lastBugEntry = null;
+    static BugPathState lastBugState = null;
     static Direction lastBuggingDirection = null;
     static ArrayList<MapLocation> trail = null;
-    static boolean message_submitted=false;
-    static boolean message_accepted=false;
-    static int message_bidAdder=0;
+    static boolean message_submitted = false;
+    static boolean message_accepted = false;
+    static int message_bidAdder = 0;
 
     static boolean netgunNear = false;
     static boolean fulfillmentCenterNear = false;
@@ -47,14 +47,12 @@ public strictfp class RobotPlayer {
     static boolean enemyLandscaperNear = false;
     static boolean enemiesNear = false;
     static boolean vaporatorNear = false;
-    static int design_centerBuilt=0;
-    static int fulfillment_centerBuilt=0;
-    static int vaporatorsBuilt=0;
-    static int HQButtonedUp=0;
-    static ArrayList<Message_Que> messageQue=new ArrayList<>();
-    static ArrayList<MapLocation> largeWall=new ArrayList<>();
-
-
+    static int design_centerBuilt = 0;
+    static int fulfillment_centerBuilt = 0;
+    static int vaporatorsBuilt = 0;
+    static int HQButtonedUp = 0;
+    static ArrayList<Message_Que> messageQue = new ArrayList<>();
+    static ArrayList<MapLocation> largeWall = new ArrayList<>();
 
 
     /**
@@ -93,7 +91,6 @@ public strictfp class RobotPlayer {
         explore_Dir = Bug1.randomDirection();
 
 
-
         System.out.println("I'm a " + rc.getType() + " and I just got created!");
         sense_Mother_HQ();
 
@@ -117,9 +114,15 @@ public strictfp class RobotPlayer {
                     case DESIGN_SCHOOL:
                         DesignSchool.runDesignSchool();
                         break;
-                    case FULFILLMENT_CENTER: FulfillmentCenter.runFulfillmentCenter(); break;
-                    case LANDSCAPER:         Landscaper2.runLandscaper();        break;
-                    case DELIVERY_DRONE:     Drone.runDrone();     break;
+                    case FULFILLMENT_CENTER:
+                        FulfillmentCenter.runFulfillmentCenter();
+                        break;
+                    case LANDSCAPER:
+                        Landscaper2.runLandscaper();
+                        break;
+                    case DELIVERY_DRONE:
+                        Drone.runDrone();
+                        break;
                     //case NET_GUN:            runNetGun();            break;
                 }
 

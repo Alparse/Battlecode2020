@@ -23,6 +23,8 @@ public class Miner3 extends RobotPlayer {
     static MapLocation lastSoupLoc = null;
     static ArrayList<MapLocation> buildLocations = null;
     static ArrayList<MapLocation> innerWallLocations = null;
+    static boolean movingClockwise = false;
+    static boolean movingCounterClockwise = true;
 
 
     enum minerState {SCANNINGSOUP, SEARCHINGSOUP, GOINGSOUP, MININGSOUP, RETURNINGSOUP, DEPOSITINGSOUP, BUILDINGREFINERY}
@@ -46,25 +48,23 @@ public class Miner3 extends RobotPlayer {
 
         while (true) {
             try {
-                System.out.println("BYTECODE START " + Clock.getBytecodeNum());
                 myLoc = rc.getLocation();
                 myHeight = rc.senseElevation(myLoc);
                 friendlyRobots = rc.senseNearbyRobots(-1, myTeam);
                 enemyRobots = rc.senseNearbyRobots(-1, enemyTeam);
                 Utility.friendlyRobotScan();
                 Utility.enemyRobotScan();
-                Communications.checkMessagesQue();
-                Communications.clearMessageQue();
+                //Communications.checkMessagesQue();
+                //Communications.clearMessageQue();
 
                 if (rc.getRoundNum() > 200 && minerJob != 1) {
                     rc.disintegrate();
                 }
-                if ((rc.getRoundNum() > 500 && minerJob == 1 && vaporatorsBuilt == 2) || rc.getRoundNum() > 700) {
-                    rc.disintegrate();
-                }
 
                 if (minerJob == 1) {
-                    if((designCenterBuilt&&fulfillmentCenterBuilt&&vaporatorsBuilt==2)||rc.getRoundNum()>500) {
+                    if ((designCenterBuilt && fulfillmentCenterBuilt && vaporatorsBuilt == 2) || rc.getRoundNum() > 600) {
+                        Communications.constructionStatus(6, design_centerBuilt, fulfillment_centerBuilt, vaporatorsBuilt);
+                        Clock.yield();
                         rc.disintegrate();
                     }
                     System.out.println("I AM A CONSTRUCTOR " + (myLoc.distanceSquaredTo(hqLoc)));
@@ -79,7 +79,7 @@ public class Miner3 extends RobotPlayer {
                                             designCenterBuilt = true;
                                             design_centerBuilt = 1;
                                             minerJob = 1;
-                                            Communications.constructionStatus(3, design_centerBuilt, fulfillment_centerBuilt, vaporatorsBuilt);
+
                                             break;
                                         }
                                     }
@@ -98,7 +98,7 @@ public class Miner3 extends RobotPlayer {
                                             designCenterBuilt = true;
                                             fulfillmentCenterBuilt = true;
                                             fulfillment_centerBuilt = 1;
-                                            Communications.constructionStatus(3, design_centerBuilt, fulfillment_centerBuilt, vaporatorsBuilt);
+
 
                                             minerJob = 1;
                                             break;
@@ -111,7 +111,6 @@ public class Miner3 extends RobotPlayer {
                     if (designCenterBuilt && fulfillmentCenterBuilt && vaporatorsBuilt < 2) {
                         for (MapLocation buildLoc : buildLocations) {
                             if (rc.canSenseLocation(buildLoc)) {
-                                System.out.println("SENSING BUILD LOC " + buildLoc);
                                 if (rc.senseRobotAtLocation(buildLoc) == null) {
                                     if (myLoc.isAdjacentTo(buildLoc)) {
                                         if (rc.isReady() & rc.canBuildRobot(RobotType.VAPORATOR, myLoc.directionTo(buildLoc))) {
@@ -120,25 +119,27 @@ public class Miner3 extends RobotPlayer {
                                             designCenterBuilt = true;
                                             vaporatorsBuilt = vaporatorsBuilt + 1;
                                             minerJob = 1;
-                                            Communications.constructionStatus(3, design_centerBuilt, fulfillment_centerBuilt, vaporatorsBuilt);
+
                                             break;
                                         }
                                     }
                                 }
                             }
                         }
+
                     }
 
+
                     //if (!designCenterBuilt || !fulfillmentCenterBuilt || vaporatorsBuilt < 2)
-                       // for (MapLocation buildLoc : buildLocations) {
-                            //if (rc.canSenseLocation(buildLoc) && !myLoc.isAdjacentTo(buildLoc)) {
-                               // if (rc.senseRobotAtLocation(buildLoc) == null) {
-                                   // Direction move_dir = Bug1.BugGetNext(buildLoc);
-                                   // makeMove(move_dir);
-                                   // System.out.println("MADE MOVE ");
-                               // }
-                           // }
-                       //}
+                    // for (MapLocation buildLoc : buildLocations) {
+                    //if (rc.canSenseLocation(buildLoc) && !myLoc.isAdjacentTo(buildLoc)) {
+                    // if (rc.senseRobotAtLocation(buildLoc) == null) {
+                    // Direction move_dir = Bug1.BugGetNext(buildLoc);
+                    // makeMove(move_dir);
+                    // System.out.println("MADE MOVE ");
+                    // }
+                    // }
+                    //}
                     if (!myLoc.isAdjacentTo(hqLoc)) {
                         Direction move_dir = Bug1.BugGetNext(myLoc.add(myLoc.directionTo(hqLoc)));
                         Utility.makeMove(move_dir);
@@ -146,10 +147,12 @@ public class Miner3 extends RobotPlayer {
                     if (myLoc.isAdjacentTo(hqLoc)) {
                         System.out.println(innerWallLocations);
                         int nextInnerIndex = getNextInnerIndex(myLoc);
-                        System.out.println("INNER INDEX "+nextInnerIndex);
                         if (rc.isReady()) {
                             if (rc.canMove(myLoc.directionTo(innerWallLocations.get(nextInnerIndex)))) {
                                 rc.move(myLoc.directionTo(innerWallLocations.get(nextInnerIndex)));
+                            }
+                            if (!rc.canMove((myLoc.directionTo(innerWallLocations.get(nextInnerIndex))))) {
+
                             }
                         }
                     }
@@ -233,13 +236,13 @@ public class Miner3 extends RobotPlayer {
                             }
                             if (myLoc.distanceSquaredTo(refineryLock) < 9) {
                                 if (Utility.isWalledOff(refineryLock) && rc.getRoundNum() > 100) {
-                                    System.out.println("DESTINATION WALLED OFF");
+
                                     myState = minerState.BUILDINGREFINERY;
                                     RobotInfo currentRefinery = rc.senseRobotAtLocation(refineryLock);
                                     for (RobotInfo r : friendlyRobots) {
                                         if (r.ID != currentRefinery.ID && (r.type == RobotType.REFINERY || r.type == RobotType.HQ)) {
                                             refineryLock = r.location;
-                                            System.out.println("FOUND ANOTHER REFINERY " + refineryLock);
+
                                             myState = minerState.RETURNINGSOUP;
                                         }
                                     }
@@ -302,7 +305,7 @@ public class Miner3 extends RobotPlayer {
 
                 }
                 Clock.yield();
-                System.out.println("BYTECODE END " + Clock.getBytecodeNum());
+
             } catch (Exception e) {
                 System.out.println(rc.getType() + " Exception");
 
@@ -334,7 +337,7 @@ public class Miner3 extends RobotPlayer {
                                 int soup = rc.senseSoup(search_location);
                                 if (soup > 0) {
                                     soupLoc = search_location;
-                                    System.out.println("FOUND SOUP WITH SOUP SCAN");
+
                                     break outerloop;
                                 }
                             }
@@ -347,7 +350,7 @@ public class Miner3 extends RobotPlayer {
                                         int soup = rc.senseSoup(search_location);
                                         if (soup > 0) {
                                             soupLoc = search_location;
-                                            System.out.println("FOUND SOUP WITH SOUP SCAN");
+
                                             break outerloop;
                                         }
                                     }
@@ -380,7 +383,7 @@ public class Miner3 extends RobotPlayer {
     public static void makeMove(Direction move_dir) throws GameActionException {
         if (rc.isReady() && rc.canMove(move_dir) && !rc.senseFlooding(myLoc.add(move_dir))) {
             trail.add(myLoc.add(move_dir));
-            System.out.println("MAKE MOVE " + move_dir);
+
             if (trail.size() >= 4) {
                 trail.remove(0);
             }
@@ -440,14 +443,30 @@ public class Miner3 extends RobotPlayer {
             }
         }
     }
+
     static int getNextInnerIndex(MapLocation myLoc) {
         myLoc = rc.getLocation();
+        int nextIndex=0;
         int currentIndex = innerWallLocations.indexOf(myLoc);
-
-
-        int nextIndex = currentIndex + 1;
-        if (currentIndex == 7) {
-            nextIndex = 0;
+        if (movingCounterClockwise) {
+            nextIndex = currentIndex + 1;
+            if (currentIndex == 7) {
+                nextIndex = 0;
+            }
+            if (!rc.canMove(myLoc.directionTo(innerWallLocations.get(nextIndex)))) {
+                movingCounterClockwise = false;
+                movingClockwise = true;
+            }
+        }
+        if (movingClockwise) {
+            nextIndex = currentIndex - 1;
+            if (currentIndex == 0) {
+                nextIndex = 7;
+            }
+            if (!rc.canMove(myLoc.directionTo(innerWallLocations.get(nextIndex)))) {
+                movingCounterClockwise = true;
+                movingClockwise = false;
+            }
         }
 
         return nextIndex;

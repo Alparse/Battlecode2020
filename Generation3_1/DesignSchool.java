@@ -7,6 +7,8 @@ public class DesignSchool extends RobotPlayer {
     static RobotController rc = RobotPlayer.rc;
     static int landscapers_built = 0;
 
+
+
     static void runDesignSchool() throws GameActionException {
         myLoc = rc.getLocation();
         myHeight = rc.senseElevation(myLoc);
@@ -17,7 +19,7 @@ public class DesignSchool extends RobotPlayer {
         Communications.checkMessagesQue();
         Communications.clearMessageQue();
         Communications.getConstructionStatus();
-        System.out.println(design_centerBuilt + " " + fulfillment_centerBuilt + " " + vaporatorsBuilt);
+        scanNearbyBuildings();
 
 
         if (rc.getRoundNum() > 50) {
@@ -30,7 +32,8 @@ public class DesignSchool extends RobotPlayer {
                         break;
                     }
             }
-            if ((design_centerBuilt == 1 && fulfillment_centerBuilt == 1 && vaporatorsBuilt == 2) || rc.getRoundNum() > 300||enemiesNear){
+
+            if ((design_centerBuilt == 1 && fulfillment_centerBuilt == 1 && vaporatorsBuilt == 2) || rc.getRoundNum() > 650||enemyRobots.length>0){
 
                 if (landscapers_built < 18 && rc.getTeamSoup() >= 200) {
                     for (Direction dir : directions)
@@ -43,6 +46,21 @@ public class DesignSchool extends RobotPlayer {
                 }
                 }
         }
+    }
+    static void scanNearbyBuildings(){
+        int vaporators=0;
+        for (RobotInfo nearbyRobot:friendlyRobots){
+            if (nearbyRobot.type==RobotType.FULFILLMENT_CENTER) {
+                fulfillment_centerBuilt = 1;
+            }
+            if (nearbyRobot.type==RobotType.DESIGN_SCHOOL) {
+                design_centerBuilt = 1;
+            }
+            if (nearbyRobot.type==RobotType.VAPORATOR) {
+                vaporators = vaporators + 1;
+            }
+        }
+        vaporatorsBuilt=vaporators;
     }
 
 }

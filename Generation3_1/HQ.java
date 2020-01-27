@@ -17,7 +17,7 @@ public class HQ extends RobotPlayer {
         System.out.println(Clock.getBytecodeNum());
         myLoc = rc.getLocation();
         myHeight = rc.senseElevation(myLoc);
-        System.out.println("HQ ");
+
         friendlyRobots = rc.senseNearbyRobots(-1, myTeam);
         enemyRobots = rc.senseNearbyRobots(-1, enemyTeam);
         Utility.friendlyRobotScan();
@@ -50,7 +50,7 @@ public class HQ extends RobotPlayer {
                 }
         }
         if (miners_built ==3&&rc.getTeamSoup()>100) {
-            System.out.println(("3rd bot"));
+
             for (Direction dir : directions)
                 if (Utility.tryBuild(RobotType.MINER, dir)) {
                     RobotInfo built_robot=rc.senseRobotAtLocation(myLoc.add(dir));

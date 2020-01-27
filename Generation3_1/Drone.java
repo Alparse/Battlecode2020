@@ -30,7 +30,7 @@ public class Drone extends RobotPlayer {
         if (rc.getRoundNum() < 1000) {
         }
         swarmCenter = hqLoc;
-        System.out.println("OUTER SWARM CENTER " + swarmCenter);
+
         if(rc.getRoundNum()<800){
             wave=1;
         }
@@ -42,7 +42,7 @@ public class Drone extends RobotPlayer {
 
         while (true) {
             try {
-                System.out.println("BYTECODE START " + Clock.getBytecodeNum());
+
                 myLoc = rc.getLocation();
                 friendlyRobots = rc.senseNearbyRobots(-1, myTeam);
                 enemyRobots = rc.senseNearbyRobots(-1, enemyTeam);
@@ -79,7 +79,6 @@ public class Drone extends RobotPlayer {
                 }
 
 
-                System.out.println("SEGMENT 1 ");
 
                 if (myLoc.distanceSquaredTo(enemyHQLoc) < RobotType.DELIVERY_DRONE.sensorRadiusSquared) {
                     if (rc.canSenseLocation(enemyHQLoc)) {
@@ -96,15 +95,17 @@ public class Drone extends RobotPlayer {
                 }
 
 
-                System.out.println("INNER SWARM CENTER " + swarmCenter);
                 switch (myState) {
                     case DRONING:
-                        System.out.println("DRONING");
+                        if(enemyRobots.length>0&&!rc.isCurrentlyHoldingUnit()){
+                            Direction move_dir=myLoc.directionTo(enemyRobots[0].location);
+                            makeMove(move_dir);
+                        }
                         pickupEnemy();
 
                         if (rc.isCurrentlyHoldingUnit()) {
                             Direction move_dir = myLoc.directionTo(swarmCenter).opposite();
-                            if (rc.senseFlooding(myLoc) || myLoc.distanceSquaredTo(swarmCenter) > 100) {
+                            if (rc.senseFlooding(myLoc)) {
                                 if (rc.isReady()) {
                                     for (Direction dir : directions) {
                                         if (rc.canDropUnit(dir)) {
@@ -116,20 +117,24 @@ public class Drone extends RobotPlayer {
                             makeMove(move_dir);
                         }
 
-                        if (swarmCenter == hqLoc) {
-                            if (!rc.isCurrentlyHoldingUnit() && !myLoc.isAdjacentTo(hqLoc)) {
+                        if (swarmCenter == hqLoc||!enemiesNear) {
+                            if (!rc.isCurrentlyHoldingUnit() && myLoc.distanceSquaredTo(hqLoc)>20) {
                                 Direction move_dir = myLoc.directionTo(swarmCenter);
                                 makeMove(move_dir);
                             }
-                            if (!rc.isCurrentlyHoldingUnit() && myLoc.isAdjacentTo(hqLoc)) {
+                            if (!rc.isCurrentlyHoldingUnit() && myLoc.distanceSquaredTo(hqLoc)<=20&&myLoc.distanceSquaredTo(hqLoc)>13) {
+                                Direction move_dir = randomDirection();
+                                makeMove(move_dir);
+                            }
+                            if (!rc.isCurrentlyHoldingUnit() && myLoc.distanceSquaredTo(hqLoc)<=13) {
                                 if (swarmCenter == hqLoc) {
-                                    Direction move_dir = randomDirection();
+                                    Direction move_dir = myLoc.directionTo(hqLoc).opposite();
                                     makeMove(move_dir);
                                 }
                             }
                         }
+
                         if (swarmCenter != hqLoc) {
-                            System.out.println("MOVING TO ENEMY");
                             Direction move_dir = myLoc.directionTo(swarmCenter);
                             makeMove(move_dir);
                         }
@@ -138,10 +143,10 @@ public class Drone extends RobotPlayer {
                         break;
 
                     case HUNTING:
-                        System.out.println("HUNTING");
+
                         break;
                     case ATTACKINGENEMYHQ:
-                        System.out.println("ATTACKING ENEMYHQ");
+
                         break;
 
                 }
